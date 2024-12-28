@@ -4,8 +4,8 @@
   * @brief          : Main program body
   ******************************************************************************
   *
-  * Original code by MickleT, this version modded by Ian Johnston (IanSJohnston on YouTube),
-  * for 4.58" 960x320 TFT LCD (ST7701S) and using LT7680 controller adaptor
+  * By Ian Johnston (IanSJohnston on YouTube),
+  * for 3.71" 960x240 TFT LCD (ST7701S) and using LT7680 controller adaptor
   * Visual Studio 2022 with VisualGDB plugin:
   * To upload HEX from VS2022 = BUILD then PROGRAM AND START WITHOUT DEBUGGING
   * Use LIVE WATCH to view variables live debug
@@ -14,7 +14,6 @@
   *
   ******************************************************************************
 */
-
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
