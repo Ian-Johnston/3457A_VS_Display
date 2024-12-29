@@ -13,9 +13,9 @@
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 DMA_HandleTypeDef hdma_spi1_tx;
-DMA_HandleTypeDef hdma_spi2_rx;
+//DMA_HandleTypeDef hdma_spi2_rx;
 
-/* SPI1 init function */
+// SPI1 init function
 void MX_SPI1_Init(void)                                     // LCD (LT7680)
 {
     hspi1.Instance = SPI1;
@@ -36,7 +36,9 @@ void MX_SPI1_Init(void)                                     // LCD (LT7680)
     }
 }
 
-/* SPI2 init function */
+
+/*
+// SPI2 init function
 void MX_SPI2_Init(void)                                     // VFD
 {
     hspi2.Instance = SPI2;
@@ -55,9 +57,10 @@ void MX_SPI2_Init(void)                                     // VFD
         Error_Handler();
     }
 }
+*/
 
 
-/* SPI MSP Init */
+// SPI MSP Init
 void HAL_SPI_MspInit(SPI_HandleTypeDef *spiHandle)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -120,22 +123,23 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *spiHandle)
 
         __HAL_LINKDMA(spiHandle, hdmatx, hdma_spi1_tx);
     }
+
+    /*
     else if (spiHandle->Instance == SPI2)                       // VFD
     {
-        /* SPI2 clock enable */
+        // SPI2 clock enable
         __HAL_RCC_SPI2_CLK_ENABLE();
 
         __HAL_RCC_GPIOB_CLK_ENABLE();
-        /** SPI2 GPIO Configuration
-        PB13 ------> SPI2_SCK
-        PB15 ------> SPI2_MOSI
-        */
+        // SPI2 GPIO Configuration
+        // PB13 ------> SPI2_SCK
+        // PB15 ------> SPI2_MOSI
         GPIO_InitStruct.Pin = VFD_SCK_Pin | VFD_SDA_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-        /* SPI2 DMA Init */
+        // SPI2 DMA Init
         hdma_spi2_rx.Instance = DMA1_Channel4;
         hdma_spi2_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
         hdma_spi2_rx.Init.PeriphInc = DMA_PINC_DISABLE;
@@ -151,10 +155,11 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *spiHandle)
 
         __HAL_LINKDMA(spiHandle, hdmarx, hdma_spi2_rx);
 
-        /* SPI2 interrupt Init */
+        // SPI2 interrupt Init
         HAL_NVIC_SetPriority(SPI2_IRQn, 0, 0);
         HAL_NVIC_EnableIRQ(SPI2_IRQn);
     }
+    */
 }
 
 /* SPI MSP DeInit */
@@ -176,23 +181,25 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef *spiHandle)
         /* SPI1 DMA DeInit */
         HAL_DMA_DeInit(spiHandle->hdmatx);
     }
+
+    /*
     else if (spiHandle->Instance == SPI2)                       // VFD
     {
-        /* SPI2 clock disable */
+        // SPI2 clock disable
         __HAL_RCC_SPI2_CLK_DISABLE();
 
-        /** SPI2 GPIO Configuration
-        PB13 ------> SPI2_SCK
-        PB15 ------> SPI2_MOSI
-        */
+        // SPI2 GPIO Configuration
+        // PB13 ------> SPI2_SCK
+        // PB15 ------> SPI2_MOSI
         HAL_GPIO_DeInit(GPIOB, VFD_SCK_Pin | VFD_SDA_Pin);
 
-        /* SPI2 DMA DeInit */
+        // SPI2 DMA DeInit
         HAL_DMA_DeInit(spiHandle->hdmarx);
 
-        /* SPI2 interrupt Deinit */
+        // SPI2 interrupt Deinit
         HAL_NVIC_DisableIRQ(SPI2_IRQn);
     }
+    */
 }
 
 

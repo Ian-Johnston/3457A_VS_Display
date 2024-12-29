@@ -223,7 +223,7 @@ void DMA1_Channel4_IRQHandler(void)
   /* USER CODE BEGIN DMA1_Channel4_IRQn 0 */
 
   /* USER CODE END DMA1_Channel4_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_spi2_rx);
+  //HAL_DMA_IRQHandler(&hdma_spi2_rx);                  // not used on 3457A
   /* USER CODE BEGIN DMA1_Channel4_IRQn 1 */
 
   /* USER CODE END DMA1_Channel4_IRQn 1 */
@@ -261,7 +261,7 @@ void EXTI15_10_IRQHandler(void)
       HAL_SPI_Receive_DMA (&hspi2, rx_buffer, PACKET_WIDTH*PACKET_COUNT);
   }
   /* USER CODE END EXTI15_10_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(VFD_RESTART_Pin);
+  //HAL_GPIO_EXTI_IRQHandler(VFD_RESTART_Pin);          // not used on 3457A
   /* USER CODE BEGIN EXTI15_10_IRQn 1 */
 
   /* USER CODE END EXTI15_10_IRQn 1 */

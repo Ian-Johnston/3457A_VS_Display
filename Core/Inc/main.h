@@ -54,15 +54,22 @@ void Error_Handler(void);
 #define SPI_CS_PIN         GPIO_PIN_4       // CS = PA4
 #define SPI_CS_PORT        GPIOA
 
-#define VFD_RESTART_Pin GPIO_PIN_11				// PB11
-#define VFD_RESTART_GPIO_Port GPIOB
-#define VFD_RESTART_EXTI_IRQn EXTI15_10_IRQn
+#define DMM_SYNC_Pin GPIO_PIN_11				// PB11
+#define DMM_SYNC_GPIO_Port GPIOB
+#define DMM_SYNC_EXTI_IRQn EXTI15_10_IRQn					// is this needed?
 
-#define VFD_SCK_Pin GPIO_PIN_13					// PB13
-#define VFD_SCK_GPIO_Port GPIOB
+#define DMM_O2_Pin GPIO_PIN_13					// PB13
+#define DMM_O2_GPIO_Port GPIOB
 
-#define VFD_SDA_Pin GPIO_PIN_15					// PB15
-#define VFD_SDA_GPIO_Port GPIOB
+#define DMM_INA_Pin GPIO_PIN_15					// PB15
+#define DMM_INA_GPIO_Port GPIOB
+
+#define DMM_ISA_Pin GPIO_PIN_15					// PB14
+#define DMM_ISA_GPIO_Port GPIOB
+
+#define DMM_PWO_Pin GPIO_PIN_15					// PB12
+#define DMM_PWO_GPIO_Port GPIOB
+
 // Note: PB10 lt7680 reset pin is in lt7680.h
 	
 // The number of bytes in one data packet loaded into the U4 shift register

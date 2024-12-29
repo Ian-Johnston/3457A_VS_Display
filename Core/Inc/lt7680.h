@@ -112,7 +112,7 @@ void SetCanvasImageWidth_LT(void);
 #define LCD_HBPD				80			// Horizontal Back Porch
 #define LCD_HFPD				20			// Horizontal Front Porch
 #define LCD_HSPW				20			// Horizontal Start Position
-#define LCD_XSIZE_TFT			320			// Resolution - Horizontal pixels
+#define LCD_XSIZE_TFT			240			// Resolution - Horizontal pixels
 #define LCD_YSIZE_TFT			960			// Resolution - Vertical Pixels
 #define HSYNC_ACTIVE			0			// 0 = HSYNC Low Active
 #define VSYNC_ACTIVE			0			// 0 = VSYNC Low Active
