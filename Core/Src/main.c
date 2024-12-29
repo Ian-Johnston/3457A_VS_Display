@@ -471,7 +471,7 @@ int main(void) {
 
 	HAL_Delay(1000);
 	
-	BuyDisplay_Init();				// Initialize ST7701S BuyDisplay 4.58" driver IC
+	BuyDisplay_Init();				// Initialize ST7701S BuyDisplay 3.71" driver IC
 
 	HAL_Delay(100);
 
@@ -484,6 +484,9 @@ int main(void) {
 
 	HAL_Delay(5);
 	ConfigurePWMAndSetBrightness(BACKLIGHTFULL);  // Configure Timer-1 and PWM-1 for backlighting. Settable 0-100%
+
+	// TEST
+	DisplaySplash();
 
 //**************************************************************************************************
 // Main loop initialize
@@ -515,9 +518,9 @@ int main(void) {
 
 			DisplayMain();
 
-			HAL_Delay(6); // Allow the LT7680 sufficient processing time
+			//HAL_Delay(6); // Allow the LT7680 sufficient processing time
 
-			DisplayAux();
+			//DisplayAux();
 
 			HAL_Delay(6); // Allow the LT7680 sufficient processing time
 

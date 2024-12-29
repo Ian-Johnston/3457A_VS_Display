@@ -106,10 +106,6 @@ void DelayMicroseconds(uint16_t us);
 #define LCD_SDI_Port  GPIOB
 
 	
-	
-	
-	
-	
 #ifdef __cplusplus
 }
 #endif

@@ -32,7 +32,7 @@ void DisplayAnnunciatorsHalf(void);
 #define Xpos_MAIN				102			// These are actually the Y position because LCD is rotated 90deg in use. Values in pixels.
 #define Xpos_AUX				200
 #define Xpos_ANNUNC				70
-#define Xpos_SPLASH				250
+#define Xpos_SPLASH				200
 
 
 #endif // DISPLAY_H
