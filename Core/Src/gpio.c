@@ -287,31 +287,31 @@ void MX_GPIO_Init(void) {
     /* Configure GPIO pin : DMM_SYNC_Pin */
     GPIO_InitStruct.Pin = DMM_SYNC_Pin;                     // IRQ
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     HAL_GPIO_Init(DMM_SYNC_GPIO_Port, &GPIO_InitStruct);
 
     /* Configure GPIO pin : DMM_O2_Pin */
     GPIO_InitStruct.Pin = DMM_O2_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     HAL_GPIO_Init(DMM_O2_GPIO_Port, &GPIO_InitStruct);
 
     /* Configure GPIO pin : DMM_INA_Pin */
     GPIO_InitStruct.Pin = DMM_INA_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     HAL_GPIO_Init(DMM_INA_GPIO_Port, &GPIO_InitStruct);
 
     /* Configure GPIO pin : DMM_PWO_Pin */
     GPIO_InitStruct.Pin = DMM_PWO_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     HAL_GPIO_Init(DMM_PWO_GPIO_Port, &GPIO_InitStruct);
 
     /* Configure GPIO pin : DMM_ISA_Pin */
     GPIO_InitStruct.Pin = DMM_ISA_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     HAL_GPIO_Init(DMM_ISA_GPIO_Port, &GPIO_InitStruct);
 	
 	

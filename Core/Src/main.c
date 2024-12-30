@@ -32,7 +32,7 @@
 #include "stm32f1xx_hal.h"
 
 // Test only - IanJ
-//volatile int myVariable1 = 0;
+volatile int myVariable1 = 0;
 
 /* Variables ---------------------------------------------------------*/
 static char main_display_debug[LINE1_LEN + 1]; // Main display debug string
@@ -79,7 +79,7 @@ const uint8_t Reorder[PACKET_COUNT] = { 8, 7, 6, 5, 4, 3, 2, 1, 0, 18, 19, 20, 2
 // Flag indicating finish of SPI transmission to OLED
 volatile uint8_t SPI1_TX_completed_flag = 1;
 
-// Flag indicating finish of SPI start-up initialization
+// Flag indicating finish of start-up initialization
 volatile uint8_t Init_Completed_flag = 0;
 
 /* Private function prototypes -----------------------------------------------*/
@@ -421,15 +421,43 @@ void Main_Aux_R6581(void) {
 }
 
 
+// SYNC pin has gone HIGH, interrupt calls this sub
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	if (GPIO_Pin == DMM_SYNC_Pin) {
+		// Handle rising edge of SYNC
+		HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);	// Disable interrupt
+		DMM_data_incoming();					// Call sub to process incoming data
+		HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);		// Re-enable interrupt
+	}
+}
+
+
+void DMM_data_incoming(void) {
+
+	//HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
+
+	HAL_GPIO_WritePin(GPIOC, TEST_OUT_Pin, GPIO_PIN_SET); // Set the pin high
+
+	// delay (NOP)
+	for (volatile uint32_t i = 0; i < 500; i++) {
+		__NOP(); // No operation, just waste time - delay
+	}
+
+	//HAL_Delay(10);			// can't use delay in callback when interrupts are disabled
+
+	HAL_GPIO_WritePin(GPIOC, TEST_OUT_Pin, GPIO_PIN_RESET); // LED output LOW
+
+}
+
+
 //************************************************************************************************************************************************************
 //************************************************************************************************************************************************************
 
 // Main
 int main(void) {
 
-	// Pull CS high and SCLK low immediately after reset
-	HAL_GPIO_WritePin(LCD_CS_Port, LCD_CS_Pin, GPIO_PIN_SET);			// Pull CS high
-	HAL_GPIO_WritePin(LCD_SCK_Port, LCD_SCK_Pin, GPIO_PIN_RESET);		// CLK pin low
+	//__disable_irq();  // Disable interrupts
+	HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);			// disable 3457A inputs whilst we set up everything
 
 	// Reset of all peripherals, Initializes the Flash interface and the Systick.
 	HAL_Init();
@@ -442,6 +470,24 @@ int main(void) {
 	MX_DMA_Init();
 	MX_SPI1_Init();
 	//MX_SPI2_Init();
+
+
+	HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
+	HAL_Delay(500);
+	HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
+	HAL_Delay(500);
+	HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
+	HAL_Delay(500);
+	HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
+	HAL_Delay(500);
+	HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
+
+	// Pull CS high and SCLK low immediately after reset
+	HAL_GPIO_WritePin(LCD_CS_Port, LCD_CS_Pin, GPIO_PIN_SET);			// Pull CS high
+	HAL_GPIO_WritePin(LCD_SCK_Port, LCD_SCK_Pin, GPIO_PIN_RESET);		// CLK pin low
+
+	// Pull LT7680 RESET pin high immediately after reset
+	HAL_GPIO_WritePin(RESET_PORT, RESET_PIN, GPIO_PIN_SET);   // Release reset high
 
 	TIM2_Init();					// Initialize the timer
 
@@ -466,8 +512,12 @@ int main(void) {
 		// B1 low
 		AnnunColourFore = 0x00FFFF;		// Cyan
 	}
-		
+
+	myVariable1 = myVariable1 + 1;
+
 	HardwareReset();				// Reset LT7680 - Pull LCM_RESET low for 100ms and wait
+
+	myVariable1 = myVariable1 + 1;
 
 	HAL_Delay(1000);
 	
@@ -485,23 +535,26 @@ int main(void) {
 	HAL_Delay(5);
 	ConfigurePWMAndSetBrightness(BACKLIGHTFULL);  // Configure Timer-1 and PWM-1 for backlighting. Settable 0-100%
 
-	// TEST
-	DisplaySplash();
+	//__enable_irq();
+	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);			// Ready to accept 3457A inputs
 
 //**************************************************************************************************
 // Main loop initialize
 
 	Init_Completed_flag = 1; // Now is a safe time to enable the EXTI interrupt handler
 
-	while (1) {
+	while (1) {			// While loop running continious, full speed
 
-		Packets_to_chars();         // Convert packets from R6581 to characters
-		Main_Aux_R6581();           // Get R6581 VFD drive data
+		//Process_3457A_Data();		// Acquire data from 3457A
+
+		//Packets_to_chars();         // Convert packets from R6581 to characters
+		//Main_Aux_R6581();           // Get R6581 VFD drive data
 
 		task_ready = 1; // Mark tasks as complete so the timer driven code is allowed to run again
 
 		//*******************************************************************************************
 		// Timed Action - Check if timer flag is set and tasks are ready and run the LCD sub
+		// This loop runs at the SetTimerDuration setting continously AND as long as task_ready is set
 		if (timer_flag && task_ready) {
 			timer_flag = 0;   // Clear the timer flag
 			task_ready = 0;   // Reset task-ready flag    
@@ -510,7 +563,7 @@ int main(void) {
 			// Resistance mode = 14Hz
 			// All other modes = 20.4Hz
 
-			HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
+			//HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
 
 			DisplaySplash();
 

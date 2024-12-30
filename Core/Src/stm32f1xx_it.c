@@ -57,8 +57,8 @@ extern uint8_t Init_Completed_flag;
 
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_spi1_tx;
-extern DMA_HandleTypeDef hdma_spi2_rx;
-extern SPI_HandleTypeDef hspi2;
+//extern DMA_HandleTypeDef hdma_spi2_rx;
+//extern SPI_HandleTypeDef hspi2;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -237,7 +237,7 @@ void SPI2_IRQHandler(void)
   /* USER CODE BEGIN SPI2_IRQn 0 */
 
   /* USER CODE END SPI2_IRQn 0 */
-  HAL_SPI_IRQHandler(&hspi2);
+  //HAL_SPI_IRQHandler(&hspi2);
   /* USER CODE BEGIN SPI2_IRQn 1 */
 
   /* USER CODE END SPI2_IRQn 1 */
@@ -252,14 +252,22 @@ void EXTI15_10_IRQHandler(void)
 // Every 9 ms, during the start of a new display scan cycle, the S-IN56 signal is generated 
 // to load "1" into the chain of shift registers U5-U6. The edge of this signal is used as an 
 // interrupt source, which starts reading 47 packets of 5 bytes each (interrupt frequency ~111 Hz)
-  if (Init_Completed_flag) {
+
+/*
+if (Init_Completed_flag) {
       HAL_SPI_DMAStop(&hspi2);              // Used to ensure robustness when failures occur in SPI transfers.
       HAL_SPI_Abort(&hspi2);                // ---- "" ----
       __HAL_RCC_SPI2_FORCE_RESET();         // ---- "" ----
       __HAL_RCC_SPI2_RELEASE_RESET();       // ---- "" ----
       HAL_SPI_Init(&hspi2);                 // ---- "" ----
       HAL_SPI_Receive_DMA (&hspi2, rx_buffer, PACKET_WIDTH*PACKET_COUNT);
+}
+*/
+  if (Init_Completed_flag) {
+      // Call the HAL GPIO EXTI IRQ handler
+      HAL_GPIO_EXTI_IRQHandler(DMM_SYNC_Pin);
   }
+
   /* USER CODE END EXTI15_10_IRQn 0 */
   //HAL_GPIO_EXTI_IRQHandler(VFD_RESTART_Pin);          // not used on 3457A
   /* USER CODE BEGIN EXTI15_10_IRQn 1 */

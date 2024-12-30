@@ -44,8 +44,11 @@ volatile uint8_t System_Check = 0;
 volatile uint8_t SystemCheckTempValue = 0;
 
 void HardwareReset(void) {
+    //extern volatile int myVariable1;  // Declaration in other files
+    //myVariable1 = myVariable1 + 1;
     HAL_GPIO_WritePin(RESET_PORT, RESET_PIN, GPIO_PIN_RESET); // Pull reset low
     HAL_Delay(100); // Delay 100 ms
+    //myVariable1 = myVariable1 + 1;
     HAL_GPIO_WritePin(RESET_PORT, RESET_PIN, GPIO_PIN_SET);   // Release reset
     HAL_Delay(100); // Delay 100 ms
 }
@@ -352,7 +355,7 @@ void ClearScreen() {
     uint16_t charWidth = 8;      // Character width in pixels
     uint16_t charHeight = 16;    // Character height in pixels
 
-    SetTextColors(0x000000, 0x000000); // foreground, background - black
+    SetTextColors(0x0000FF, 0x0000FF); // foreground, background = black
 
     // Configure the font and position once
     ConfigureFontAndPosition(

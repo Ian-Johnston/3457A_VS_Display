@@ -11,7 +11,7 @@
 
 /* SPI Handles */
 SPI_HandleTypeDef hspi1;
-SPI_HandleTypeDef hspi2;
+//SPI_HandleTypeDef hspi2;
 DMA_HandleTypeDef hdma_spi1_tx;
 //DMA_HandleTypeDef hdma_spi2_rx;
 

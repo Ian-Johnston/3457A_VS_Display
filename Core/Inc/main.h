@@ -56,7 +56,7 @@ void Error_Handler(void);
 
 #define DMM_SYNC_Pin GPIO_PIN_11				// PB11
 #define DMM_SYNC_GPIO_Port GPIOB
-#define DMM_SYNC_EXTI_IRQn EXTI15_10_IRQn					// is this needed?
+#define DMM_SYNC_EXTI_IRQn EXTI15_10_IRQn		// This signal initiates read of data
 
 #define DMM_O2_Pin GPIO_PIN_13					// PB13
 #define DMM_O2_GPIO_Port GPIOB
