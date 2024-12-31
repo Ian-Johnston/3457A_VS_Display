@@ -251,6 +251,7 @@ Applied to our example, we have bit's positions 4 and 12 which are at level "1",
 
 */
 
+
 void MX_GPIO_Init(void) {
 
     GPIO_InitTypeDef GPIO_InitStruct = {0};

@@ -33,37 +33,8 @@
 #include "stm32f1xx_hal_tim.h"
 
 
-// Test only - IanJ
-//volatile uint32_t myVariable0 = 0;
-//volatile uint32_t myVariable1 = 0;
-//volatile uint32_t myVariable2 = 0;
-//volatile uint32_t myVariable3 = 0;
-//volatile uint32_t myVariable4 = 0;
-//volatile uint32_t myVariable5 = 0;
-//volatile uint32_t myVariable6 = 0;
-//volatile uint32_t myVariable7 = 0;
-//volatile uint32_t myVariable8 = 0;
-//volatile uint64_t myCounter1 = 0;
-//volatile uint64_t myCounter2 = 0;
-//volatile uint16_t lastCommand = 0;  // Stores the last received command
-//volatile uint8_t lastMode = 0;      // Stores the current mode (0 = Data, 1 = Command)
-//volatile uint8_t dataBuffer[MAX_BUFFER_SIZE]; // Buffer for data bytes
-//volatile uint8_t dataBufferLength = 0;       // Length of data in the buffer
-//volatile uint8_t bitValueDebug = 0;      // Last sampled bit value
-//volatile uint16_t syncTransitions = 0;  // Counts transitions on SYNC
-//volatile uint16_t dataCaptured = 0;     // Counts captured data bytes
-//volatile uint8_t debugBufferIndex = 0; // Monitor which index is being written
-//volatile uint16_t commandProcessed = 0;
-//volatile uint8_t debugBitIndex = 0;
-//volatile uint8_t decodedData[MAX_BUFFER_SIZE] = { 0 };
-//volatile uint8_t decodedDataLength = 0;
-//volatile const char* lastCommandDebug = ""; // For debug messages
-// sample Live watch lastCommandDebug will show "Data Captured"
-//volatile _Bool processBufferFlag = 0;
-//volatile uint8_t byteCounter = 0;
-//char displayString[MAX_BUFFER_SIZE];
-//#define MAX_DISPLAY_SIZE 64
-//char displayString[MAX_DISPLAY_SIZE];
+//******************************************************************************
+// Variables
 
 #define MAX_BUFFER_SIZE 64
 uint16_t unknownCommandDebug = 0;
@@ -94,6 +65,13 @@ volatile uint8_t processBufferFlag = 0;
 char DecodeChar(uint8_t charValue);
 
 volatile uint8_t debugFlagBitIndexReset = 0; // Tracks the number of times debugBitIndex is reset
+
+volatile uint32_t O2Counter = 0; // Counter for O2 clock edges
+
+volatile uint8_t o2Active = 0; // Flag to track if O2 is currently active
+volatile uint16_t o2PulseCounter = 0; // Counter for O2 pulses in a burst
+volatile uint32_t o2DeadBandCounter = 0; // Counter for dead band between bursts
+volatile uint32_t O2InactiveCounter = 0; // counter
 
 
 //******************************************************************************
@@ -191,7 +169,7 @@ void SystemClock_Config(void);
 
 //******************************************************************************
 
-//SPI transmission finished interrupt callback
+// LT7680A-R - SPI transmission finished interrupt callback
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef* hspi) {
 	if (hspi->Instance == SPI1)
 	{
@@ -199,85 +177,97 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef* hspi) {
 	}
 }
 
-
-// SYNC pin has gone HIGH, interrupt calls this sub
+// 3457A - SYNC pin has gone HIGH, interrupt calls this sub
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (GPIO_Pin == DMM_SYNC_Pin) {
-		// Handle rising edge of SYNC
-		HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);	// Disable interrupt
-		//StartO2Timer();							// Call sub to process incoming data
-		__HAL_GPIO_EXTI_CLEAR_IT(DMM_SYNC_Pin);	// Clear any pending interrupt flag for SYNC (PB11)
-		HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);		// Re-enable interrupt
+		// Check if PWO is high
+		if (HAL_GPIO_ReadPin(DMM_PWO_GPIO_Port, DMM_PWO_Pin) == GPIO_PIN_SET) {
+			// Handle rising edge of SYNC
+			HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);	// Disable interrupt
+			__HAL_GPIO_EXTI_CLEAR_IT(DMM_SYNC_Pin);	// Clear any pending interrupt flag for SYNC (PB11)
+			HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);		// Re-enable interrupt
+		}
 	}
 }
 
 
-// Captured data via interrupt
+// 3457A - Captured data via interrupt
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim) {
 	if (htim->Instance == TIM3 && htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4) {
-		// Determine mode (SYNC high = command mode, low = data mode)
-		currentMode = HAL_GPIO_ReadPin(DMM_SYNC_GPIO_Port, DMM_SYNC_Pin) ? 1 : 0;
+		// Check if PWO is high
+		if (HAL_GPIO_ReadPin(DMM_PWO_GPIO_Port, DMM_PWO_Pin) == GPIO_PIN_SET) {
+			O2Counter++; // Increment O2 pulse counter for debugging
 
-		// Read bit from ISA (command) or INA (data)
-		uint8_t bitValue = currentMode
-			? HAL_GPIO_ReadPin(DMM_ISA_GPIO_Port, DMM_ISA_Pin)
-			: HAL_GPIO_ReadPin(DMM_INA_GPIO_Port, DMM_INA_Pin);
+			// Determine mode (SYNC high = command mode, low = data mode)
+			currentMode = HAL_GPIO_ReadPin(DMM_SYNC_GPIO_Port, DMM_SYNC_Pin) ? 1 : 0;
 
-		// Append reversed bit order
-		dataBuffer[byteCounter] = (dataBuffer[byteCounter] >> 1) | (bitValue << 7);
-		debugBitIndex++;
+			// Read bit from ISA (command) or INA (data)
+			uint8_t bitValue = currentMode
+				? HAL_GPIO_ReadPin(DMM_ISA_GPIO_Port, DMM_ISA_Pin)
+				: HAL_GPIO_ReadPin(DMM_INA_GPIO_Port, DMM_INA_Pin);
 
-		// Increment byteCounter every 8 bits
-		if (debugBitIndex == 8) {
-			debugFlagBitIndexReset++; // Increment flag when bitIndex resets
-			debugBitIndex = 0;        // Reset bitIndex
-			byteCounter++;            // Move to the next byte
+			// Append reversed bit order
+			dataBuffer[byteCounter] = (dataBuffer[byteCounter] >> 1) | (bitValue << 7);
+			debugBitIndex++; // Increment bit index
 
-			// Prevent buffer overflow
-			if (byteCounter >= MAX_BUFFER_SIZE) {
-				byteCounter = 0;
-				memset(dataBuffer, 0, MAX_BUFFER_SIZE); // Reset buffer
+			// Increment byteCounter every 8 bits
+			if (debugBitIndex == 8) {
+				debugFlagBitIndexReset++; // Increment flag when bitIndex resets
+				debugBitIndex = 0;        // Reset bitIndex
+				byteCounter++;            // Move to the next byte
+
+				// Prevent buffer overflow
+				if (byteCounter >= MAX_BUFFER_SIZE) {
+					byteCounter = 0;
+					memset(dataBuffer, 0, MAX_BUFFER_SIZE); // Reset buffer
+				}
+			}
+
+			// Trigger processing if enough data is captured
+			if ((currentMode == 1 && byteCounter >= 2) || (currentMode == 0 && byteCounter >= 8)) {
+				processBufferFlag = 1; // Indicate buffer processing is needed
 			}
 		}
-
-		// Trigger processing if enough data is captured
-		if ((currentMode == 1 && byteCounter >= 2) || (currentMode == 0 && byteCounter >= 8)) {
-			processBufferFlag = 1;
+		else {
+			// Handle case when PWO is low (inactive)
+			if (O2Counter > 0) {
+				O2InactiveCounter++; // Count O2 inactive periods
+			}
 		}
 	}
 }
 
 
 
-// Process the incoming data or command
+// 3457A - Process the incoming data or command
 void ProcessBuffer() {
+	// Check if PWO is high before processing
+	if (HAL_GPIO_ReadPin(DMM_PWO_GPIO_Port, DMM_PWO_Pin) == GPIO_PIN_SET) {
+		if (currentMode == 0 && byteCounter >= 18) { // Ensure full data frame
+			// Decode the registers to extract the display content
+			DecodeRegisters(&dataBuffer[0], &dataBuffer[6], &dataBuffer[12], displayString);
 
-	if (currentMode == 0 && byteCounter >= 18) { // Ensure full data frame
-		// Decode the registers to extract the display content
-		DecodeRegisters(&dataBuffer[0], &dataBuffer[6], &dataBuffer[12], displayString);
+			// Decode punctuation for the display
+			DecodePunctuation(&dataBuffer[6], punctuationString);
 
-		// Decode punctuation for the display
-		DecodePunctuation(&dataBuffer[6], punctuationString);
-
-		// Debugging: Combine digits and punctuation for Live Watch
-		for (int i = 0; i < 12; i++) {
-			debugDisplayString[i] = displayString[i];
-			if (punctuationString[i] != ' ') {
-				debugDisplayString[i] = punctuationString[i]; // Add punctuation if present
+			// Debugging: Combine digits and punctuation for Live Watch
+			for (int i = 0; i < 12; i++) {
+				debugDisplayString[i] = displayString[i];
+				if (punctuationString[i] != ' ') {
+					debugDisplayString[i] = punctuationString[i]; // Add punctuation if present
+				}
 			}
+			debugDisplayString[12] = '\0'; // Null-terminate
 		}
-		debugDisplayString[12] = '\0'; // Null-terminate
+
+		// Reset buffer after processing
+		byteCounter = 0;
+		memset(dataBuffer, 0, MAX_BUFFER_SIZE);
 	}
-
-	// Reset buffer after processing
-	byteCounter = 0;
-	memset(dataBuffer, 0, MAX_BUFFER_SIZE);
-
 }
 
 
-
-
+// 3457A - Decode registers to extract display content
 void DecodeRegisters(const uint8_t* regA, const uint8_t* regB, const uint8_t* regC, char* displayString) {
 	for (int digit = 0; digit < 12; digit++) {
 		// Identify byte index in each register
@@ -303,6 +293,7 @@ void DecodeRegisters(const uint8_t* regA, const uint8_t* regB, const uint8_t* re
 }
 
 
+// 3457A - Decode punctuation
 void DecodePunctuation(const uint8_t* regB, char* punctuation) {
 	for (int digit = 0; digit < 12; digit++) {
 		int byteIndex = digit / 2;
@@ -324,29 +315,7 @@ void DecodePunctuation(const uint8_t* regB, char* punctuation) {
 }
 
 
-
-// Function to decode and format the display string
-void DecodeDisplayString(char* displayString, uint8_t* dataBuffer, uint8_t dataLength) {
-	// Clear the output string
-	memset(displayString, 0, MAX_BUFFER_SIZE);
-
-	// Decode each character from the data buffer
-	for (uint8_t i = 0; i < dataLength && i < MAX_BUFFER_SIZE - 1; i++) {
-		uint8_t charValue = dataBuffer[i] & 0x7F; // Mask to 7 bits as needed
-		if (charValue < sizeof(hp_charset) / sizeof(hp_charset[0])) {
-			displayString[i] = (char)hp_charset[charValue];
-		}
-		else {
-			displayString[i] = '?'; // Unknown character
-		}
-	}
-
-	// Ensure the string is null-terminated
-	displayString[dataLength] = '\0';
-}
-
-
-// Decode a single character using the HP charset
+// 3457A - Decode a single character using the HP charset
 char DecodeChar(uint8_t charValue) {
 	// Ensure charValue is within bounds
 	if (charValue < sizeof(hp_charset) / sizeof(hp_charset[0])) {
@@ -354,7 +323,6 @@ char DecodeChar(uint8_t charValue) {
 	}
 	return '?'; // Unknown character
 }
-
 
 
 //************************************************************************************************************************************************************
@@ -377,6 +345,7 @@ int main(void) {
 	MX_GPIO_Init();
 	MX_DMA_Init();
 	MX_SPI1_Init();
+
 
 	// Initialize TIM3 for 3457A Input Capture
 	TIM3_Init_InputCapture();
@@ -438,6 +407,9 @@ int main(void) {
 
 		//myCounter1++;
 
+		//MirrorSignals();	// TEST
+		//ReadO2AndCount();	// TEST
+
 
 		//if (tim3_capture_flag) {
 		//	ProcessBuffer();
@@ -464,12 +436,12 @@ int main(void) {
 			
 			//HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
 
-			DisplaySplash();
+			//DisplaySplash();
 
 			HAL_Delay(6); // Allow the LT7680 sufficient processing time
 
 			//DisplayMain();
-
+			
 			if (processBufferFlag = 1) {
 				processBufferFlag = 0;
 				ProcessBuffer();          // Process data or commands
