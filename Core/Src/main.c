@@ -96,7 +96,8 @@ char DecodeChar(uint8_t charValue);
 volatile uint8_t debugFlagBitIndexReset = 0; // Tracks the number of times debugBitIndex is reset
 
 
-
+//******************************************************************************
+// HP Symbols
 
 // Placeholder definitions for missing symbols
 #define Da 0x01
