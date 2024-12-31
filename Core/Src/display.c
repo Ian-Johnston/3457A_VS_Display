@@ -25,33 +25,6 @@ uint32_t AnnunColourFore = 0x00FF00; // Green
 
 //************************************************************************************************************************************************************
 
-void DisplayMain() {
-
-	ConfigureFontAndPosition(
-		0b00,    // Internal CGROM
-		0b10,    // Font size
-		0b00,    // ISO 8859-1
-		0,       // Full alignment enabled
-		0,       // Chroma keying disabled
-		1,       // Rotate 90 degrees counterclockwise
-		0b10,    // Width multiplier
-		0b10,    // Height multiplier
-		1,       // Line spacing
-		4,       // Character spacing
-		Xpos_MAIN,      // Cursor X
-		0        // Cursor Y
-	);
-	char MaindisplayString[19] = "";              // String for G[1] to G[18]
-	for (int i = 1; i <= 18; i++) {
-		MaindisplayString[i - 1] = G[i];          // Copy characters
-	}
-	MaindisplayString[18] = '\0';                 // Null-terminate
-	DrawText(MaindisplayString);
-
-}
-
-//******************************************************************************
-
 void DisplayAnnunciators() {
 
 	// ANNUNCIATORS - Print or clear text on the LCD
