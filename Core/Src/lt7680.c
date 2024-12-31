@@ -355,7 +355,7 @@ void ClearScreen() {
     uint16_t charWidth = 8;      // Character width in pixels
     uint16_t charHeight = 16;    // Character height in pixels
 
-    SetTextColors(0x0000FF, 0x0000FF); // foreground, background = black
+    SetTextColors(0x000000, 0x000000); // foreground, background = black
 
     // Configure the font and position once
     ConfigureFontAndPosition(

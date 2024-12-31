@@ -128,285 +128,233 @@ void LCD_Hor_Ver_Timing() {
 
 void BuyDisplay_Init() {
 
-	// Refer to ST7701S datasheet and your TFT LCD datasheet in order to make the following settings
-
-	//*************************************************************************************************************************************
-	LCDWriteRegister(0xFF);			// CND2BKxSEL (FFh/FF00h): Command2 BK3 Selection - Command bank selection - Bank 3
-	LCDWriteData(0x77);
-	LCDWriteData(0x01);
-	LCDWriteData(0x00);
-	LCDWriteData(0x00);
-	LCDWriteData(0x13);	// 10011b
-	
-	LCDWriteRegister(0xEF);			// not known
-	LCDWriteData(0x08);
-	
-	//*************************************************************************************************************************************
-	LCDWriteRegister(0xFF);			// CND2BKxSEL (FFh/FF00h): Command2 BK0 Selection - Command bank selection - Bank 0 (system)
-	LCDWriteData(0x77);
-	LCDWriteData(0x01);
-	LCDWriteData(0x00);
-	LCDWriteData(0x00);
-	LCDWriteData(0x10);	// 10000b
-
-	LCDWriteRegister(0xC0);			// LNESET (C0h/C000h): Display Line Setting
-	LCDWriteData(0x77);				// 960 lines for 240x960 LCD
-	LCDWriteData(0x00);				// 960 lines for 240x960 LCD
-
-	LCDWriteRegister(0xC1);			// PORCTRL (C1h/C100h): Porch Control
-	LCDWriteData(0x11);				// VBP = 11 for 240x960 LCD, possibly 11 per demo code
-	LCDWriteData(0x05);				// VFP = 0C for 240x960 LCD, possibly 05 per demo code
-
-	LCDWriteRegister(0xC2);			// INVSET (C2h/C200h): Inversion selection & Frame Rate Control 
-	LCDWriteData(0x07);				// C200h: Inversion Selection NLINV = #
-	LCDWriteData(0x02);				// C201h: Frame Rate Control RTNI =	#
-
-	LCDWriteRegister(0xC3);			// RGBCTRL (C3h/C300h): RGB control
-	LCDWriteData(0x80);				// C300h: DE/HV=HV, VSP=L, HSP=L, DP=Rising, EP=High	=> ########
-	LCDWriteData(0x10);				// C301h: HBP_HVRGB[7:0] (Horizontal Back Porch in HSYNC in cycles)
-	LCDWriteData(0x10);				// C302h: VBP_HVRGB[7:0] (Vertical Back Porch HSYNC in cycles)
-	
-	LCDWriteRegister(0xCC);			// not known
-	LCDWriteData(0x30);
-	
-	LCDWriteRegister(0xB0);			// PVGAMCTRL (B0h/B000h): Positive Voltage Gamma Control 
-	LCDWriteData(0x06);				// VC0P[3:0], AJ0P[1:0]
-	LCDWriteData(0xCF);				// VC4P[5:0], AJ1P[1:0]
-	LCDWriteData(0x14);				// VC8P[5:0], AJ2P[1:0]
-	LCDWriteData(0x0C);				// VC16P[4:0]
-	LCDWriteData(0x0F);				// VC24P[4:0], AJ3P[1:0]
-	LCDWriteData(0x03);				// VC52P[3:0]
-	LCDWriteData(0x00);				// VC80P[5:0]
-	LCDWriteData(0x0A);				// VC108P[3:0]
-	LCDWriteData(0x07);				// VC147P[3:0]
-	LCDWriteData(0x1B);				// VC175P[5:0]
-	LCDWriteData(0x03);				// VC203P[3:0]
-	LCDWriteData(0x12);				// VC231P[4:0], AJ4P[1:0]
-	LCDWriteData(0x10);				// VC239P[4:0]
-	LCDWriteData(0x25);				// VC247P[5:0], AJ5P[1:0]
-	LCDWriteData(0x36);				// VC251P[5:0], AJ6P[1:0]
-	LCDWriteData(0x1E);				// VC255P[4:0], AJ7P[1:0]
-
-	LCDWriteRegister(0xB1);			// VCOMS (B1h/B100h):VCOM amplitude setting  
-	LCDWriteData(0x0C);				// VC0N[3:0], AJ0N[1:0]
-	LCDWriteData(0xD4);				// VC4N[5:0], AJ1N[1:0]
-	LCDWriteData(0x18);				// VC8N[5:0], AJ2N[1:0]
-	LCDWriteData(0x0C);				// VC16N[4:0]
-	LCDWriteData(0x0E);				// VC24N[4:0], AJ3N[1:0]
-	LCDWriteData(0x06);				// VC52N[3:0]
-	LCDWriteData(0x03);				// VC80N[5:0]
-	LCDWriteData(0x06);				// VC108N[3:0]
-	LCDWriteData(0x08);				// VC147N[3:0]
-	LCDWriteData(0x23);				// VC175N[5:0]
-	LCDWriteData(0x06);				// VC203N[3:0]
-	LCDWriteData(0x12);				// VC231N[4:0], AJ4N[1:0]
-	LCDWriteData(0x10);				// VC239N[4:0]
-	LCDWriteData(0x30);				// VC247N[5:0], AJ5N[1:0]
-	LCDWriteData(0x2F);				// VC251N[5:0], AJ6N[1:0]
-	LCDWriteData(0x1F);				// VC255N[4:0], AJ7N[1:0]
-
-	//*************************************************************************************************************************************
-	LCDWriteRegister(0xFF);			// CND2BKxSEL (FFh/FF00h): Command2 BK1 Selection - Command bank selection - Bank 1
-	LCDWriteData(0x77);
-	LCDWriteData(0x01);
-	LCDWriteData(0x00);
-	LCDWriteData(0x00);
-	LCDWriteData(0x11);	//10001b
-
-	LCDWriteRegister(0xB0);			// BK1: VRHS (B0h/B000h): Vop Amplitude setting 
-	LCDWriteData(0x73);				// VRHA[7:0] = 0x6D (109 in decimal) - xxxVdc
-
-	LCDWriteRegister(0xB1);			// VCOMS (B1h/B100h): VCOM amplitude setting 
-	LCDWriteData(0x7C);
-
-	LCDWriteRegister(0xB2);			// VGHSS (B2h/B200h): VGH Voltage setting  
-	LCDWriteData(0x83);
-
-	LCDWriteRegister(0xB3);			// TESTCMD (B3h/B300h): Internal TEST Command Setting  
-	LCDWriteData(0x80);				// 0x80 = enable test (if LCD has routine), 0x## = #######
-
-	LCDWriteRegister(0xB5);			// VGLS (B5h/B500h): VGL Voltage setting  
-	LCDWriteData(0x49);
-
-	LCDWriteRegister(0xB7);			// PWCTRL1 (B7h/B700h): Power Control 1  
-	LCDWriteData(0x87);
-
-	LCDWriteRegister(0xB8);			// PWCTRL2 (B8h/B800h): Power Control 2 
-	LCDWriteData(0x33);
-
-	LCDWriteRegister(0xC1);			// SPD1 (C1h/C100h): Source pre_drive timing set1  
-	LCDWriteData(0x08);
-
-	LCDWriteRegister(0xC2);			// SPD2 (C2h/C200h): Source EQ2 Setting  
-	LCDWriteData(0x08);
-
-	LCDWriteRegister(0xD0);			// MIPISET1 (D0h/D000h): MIPI Setting 1  - Ignore if LCD is using parallel or SPI comms
-	LCDWriteData(0x88);
-
-	LCDWriteRegister(0xE0);			// SECTRL (E0h/E000h): Sunlight Readable Enhancement  
-	LCDWriteData(0x00);
-	LCDWriteData(0x00);
-	LCDWriteData(0x02);
-
-	// NRCTRL (E1h/E100h): Noise Reduce Control
-	//uint8_t enablenr = 0;  // 1 to enable, 0 to disable noise reduction
-	//uint8_t levelnr = 0x05; // Noise reduction level (0b00, 0b01, 0b10, 0b11)				????
-	//uint8_t byte1nr = (enablenr ? (1 << 4) : 0x00) | (levelnr & 0x03);
-	LCDWriteRegister(0xE1);
-	//LCDWriteData(byte1nr); // Byte 1: Enable/Disable and Level Adjust
-	LCDWriteData(0x05);  // Byte 1: Enable/Disable and Level Adjust
-	LCDWriteData(0x96);  // Byte 2: Reserved/unknown
-	LCDWriteData(0x07);  // Byte 3: Reserved/unknown
-	LCDWriteData(0x96);  // Byte 4: Reserved/unknown
-	LCDWriteData(0x06);  // Byte 5: Reserved/unknown
-	LCDWriteData(0x96);  // Byte 6: Reserved/unknown
-	LCDWriteData(0x08);  // Byte 7: Reserved/unknown
-	LCDWriteData(0x96);  // Byte 8: Reserved/unknown
-	LCDWriteData(0x00);  // Byte 9: Reserved/unknown
-	LCDWriteData(0x44);  // Byte 10: Reserved/unknown
-	LCDWriteData(0x44);  // Byte 11: Reserved/unknown
-
-	// SECTRL (E2h/E200h): Sharpness Control  
-	//uint8_t enablesc = 0;  // 1 to enable sharpness, 0 to disable
-	//uint8_t levelsc = 0x02; // Sharpness level (0b00, 0b01, 0b10, 0b11)
-	// Construct Byte 1: Enable/Disable and Level Adjust
-	//uint8_t byte1sc = (enablesc ? (1 << 4) : 0x00) | (levelsc & 0x03);
-	LCDWriteRegister(0xE2);
-	//LCDWriteData(byte1sc); // Byte 1: Enable/Disable and Level Adjust
-	LCDWriteData(0x00);  // Byte 1: Enable/Disable and Level Adjust
-	LCDWriteData(0x00);  // Byte 2: Reserved/unknown
-	LCDWriteData(0x03);  // Byte 3: Reserved/unknown
-	LCDWriteData(0x03);  // Byte 4: Reserved/unknown
-	LCDWriteData(0x00);  // Byte 5: Reserved/unknown
-	LCDWriteData(0x00);  // Byte 6: Reserved/unknown
-	LCDWriteData(0x02);  // Byte 7: Reserved/unknown
-	LCDWriteData(0x00);  // Byte 8: Reserved/unknown
-	LCDWriteData(0x00);  // Byte 9: Reserved/unknown
-	LCDWriteData(0x00);  // Byte 10: Reserved/unknown
-	LCDWriteData(0x02);  // Byte 11: Reserved/unknown
-	LCDWriteData(0x00);  // Byte 12: Reserved/unknown
-	//LCDWriteData(0x00);  // Byte 13: Reserved/unknown
-	//LCDWriteData(0x00);  // Byte 14: Reserved/unknown
-
-	LCDWriteRegister(0xE3);			// CCCTRL (E3h/E300h): Color Calibration Control 
-	LCDWriteData(0x00);
-	LCDWriteData(0x00);
-	LCDWriteData(0x33);
-	LCDWriteData(0x33);
-
-	LCDWriteRegister(0xE4);			// SKCTRL (E4h/E400h): Skin Tone Preservation Control 
-	LCDWriteData(0x44);
-	LCDWriteData(0x44);
-	
-	LCDWriteRegister(0xE5);			// not known
-	LCDWriteData(0x0D);
-	LCDWriteData(0xD4);
-	LCDWriteData(0x28);
-	LCDWriteData(0x8C);
-	LCDWriteData(0x0F);
-	LCDWriteData(0xD6);
-	LCDWriteData(0x28);
-	LCDWriteData(0x8C);
-	LCDWriteData(0x09);
-	LCDWriteData(0xD0);
-	LCDWriteData(0x28);
-	LCDWriteData(0x8C);
-	LCDWriteData(0x0b);
-	LCDWriteData(0xD2);
-	LCDWriteData(0x28);
-	LCDWriteData(0x8C);
-	
-	LCDWriteRegister(0xE6);			// not known
-	LCDWriteData(0x00);
-	LCDWriteData(0x00);
-	LCDWriteData(0x33);
-	LCDWriteData(0x33);
-
-	LCDWriteRegister(0xE7);			// not known
-	LCDWriteData(0x44);
-	LCDWriteData(0x44);
-
-	LCDWriteRegister(0xE8);			// not known
-	LCDWriteData(0x0E);
-	LCDWriteData(0xD5);
-	LCDWriteData(0x28);
-	LCDWriteData(0x8C);
-	LCDWriteData(0x10);
-	LCDWriteData(0xD7);
-	LCDWriteData(0x28);
-	LCDWriteData(0x8C);
-	LCDWriteData(0x0A);
-	LCDWriteData(0xD1);
-	LCDWriteData(0x28);
-	LCDWriteData(0x8C);
-	LCDWriteData(0x0C);
-	LCDWriteData(0xD3);
-	LCDWriteData(0x28);
-	LCDWriteData(0x8C);
-
-	LCDWriteRegister(0xEB);			// not known
-	LCDWriteData(0x00);
-	LCDWriteData(0x01);
-	LCDWriteData(0xE4);
-	LCDWriteData(0xE4);
-	LCDWriteData(0x44);
-	LCDWriteData(0x00);
-	//LCDWriteData(0x40);
-
-	//LCDWriteRegister(0xEC);			// not known
-	//LCDWriteData(0x00);
-	//LCDWriteData(0x00);
-	//LCDWriteData(0x00);
-
-	LCDWriteRegister(0xED);			// not known
-	LCDWriteData(0xF3);
-	LCDWriteData(0xC1);
-	LCDWriteData(0xBA);
-	LCDWriteData(0x0F);
-	LCDWriteData(0x66);
-	LCDWriteData(0x77);
-	LCDWriteData(0x44);
-	LCDWriteData(0x55);
-	LCDWriteData(0x55);
-	LCDWriteData(0x44);
-	LCDWriteData(0x77);
-	LCDWriteData(0x66);
-	LCDWriteData(0xF0);
-	LCDWriteData(0xAB);
-	LCDWriteData(0x1C);
-	LCDWriteData(0x3F);
-
-	LCDWriteRegister(0xEF);			// not known
-	LCDWriteData(0x10);
-	LCDWriteData(0x0D);
-	LCDWriteData(0x04);
-	LCDWriteData(0x08);
-	LCDWriteData(0x3F);
-	LCDWriteData(0x1F);
-	
-	//*************************************************************************************************************************************
-	LCDWriteRegister(0xFF);			// CND2BKxSEL (FFh/FF00h): Command2 BKx Selection - Command bank selection - Disable Banl function
+	LCDWriteRegister(0xff);
 	LCDWriteData(0x77);
 	LCDWriteData(0x01);
 	LCDWriteData(0x00);
 	LCDWriteData(0x00);
 	LCDWriteData(0x13);
-
-	LCDWriteRegister(0xE8);
+	LCDWriteRegister(0xef);
+	LCDWriteData(0x08);
+	LCDWriteRegister(0xff);
+	LCDWriteData(0x77);
+	LCDWriteData(0x01);
 	LCDWriteData(0x00);
-	LCDWriteData(0x0E);
-
-	LCDWriteRegister(0xE8);
 	LCDWriteData(0x00);
+	LCDWriteData(0x10);
+	LCDWriteRegister(0xc0);
+	LCDWriteData(0x77);
+	LCDWriteData(0x00);
+	LCDWriteRegister(0xc1);
+	LCDWriteData(0x11);
+	LCDWriteData(0x0c);
+	LCDWriteRegister(0xc2);
+	LCDWriteData(0x07);
+	LCDWriteData(0x02);
+
+	LCDWriteRegister(0xC3);
+	LCDWriteData(0x80);
+	LCDWriteData(0x10);
+	LCDWriteData(0x10);
+
+	LCDWriteRegister(0xcc);
+	LCDWriteData(0x30);
+	LCDWriteRegister(0xB0);
+	LCDWriteData(0x06);
+	LCDWriteData(0xCF);
+	LCDWriteData(0x14);
 	LCDWriteData(0x0C);
+	LCDWriteData(0x0F);
+	LCDWriteData(0x03);
+	LCDWriteData(0x00);
+	LCDWriteData(0x0A);
+	LCDWriteData(0x07);
+	LCDWriteData(0x1B);
+	LCDWriteData(0x03);
+	LCDWriteData(0x12);
+	LCDWriteData(0x10);
+	LCDWriteData(0x25);
+	LCDWriteData(0x36);
+	LCDWriteData(0x1E);
+	LCDWriteRegister(0xB1);
+	LCDWriteData(0x0C);
+	LCDWriteData(0xD4);
+	LCDWriteData(0x18);
+	LCDWriteData(0x0C);
+	LCDWriteData(0x0E);
+	LCDWriteData(0x06);
+	LCDWriteData(0x03);
+	LCDWriteData(0x06);
+	LCDWriteData(0x08);
+	LCDWriteData(0x23);
+	LCDWriteData(0x06);
+	LCDWriteData(0x12);
+	LCDWriteData(0x10);
+	LCDWriteData(0x30);
+	LCDWriteData(0x2F);
+	LCDWriteData(0x1F);
+	LCDWriteRegister(0xff);
+	LCDWriteData(0x77);
+	LCDWriteData(0x01);
+	LCDWriteData(0x00);
+	LCDWriteData(0x00);
+	LCDWriteData(0x11);
+	LCDWriteRegister(0xb0);
+	LCDWriteData(0x73);
+	LCDWriteRegister(0xb1);
+	LCDWriteData(0x7C);
+	LCDWriteRegister(0xb2);
+	LCDWriteData(0x83);
+	LCDWriteRegister(0xb3);
+	LCDWriteData(0x80);
+	LCDWriteRegister(0xb5);
+	LCDWriteData(0x49);
+	LCDWriteRegister(0xb7);
+	LCDWriteData(0x87);
+	LCDWriteRegister(0xb8);
+	LCDWriteData(0x33);
+	LCDWriteRegister(0xb9);
+	LCDWriteData(0x10);
+	LCDWriteData(0x1f);
+	LCDWriteRegister(0xbb);
+	LCDWriteData(0x03);
+	LCDWriteRegister(0xc1);
+	LCDWriteData(0x08);
+	LCDWriteRegister(0xc2);
+	LCDWriteData(0x08);
+	LCDWriteRegister(0xd0);
+	LCDWriteData(0x88);
+	LCDWriteRegister(0xe0);
+	LCDWriteData(0x00);
+	LCDWriteData(0x00);
+	LCDWriteData(0x02);
+	LCDWriteData(0x00);
+	LCDWriteData(0x00);
+	LCDWriteData(0x0c);
+	LCDWriteRegister(0xe1);
+	LCDWriteData(0x05);
+	LCDWriteData(0x96);
+	LCDWriteData(0x07);
+	LCDWriteData(0x96);
+	LCDWriteData(0x06);
+	LCDWriteData(0x96);
+	LCDWriteData(0x08);
+	LCDWriteData(0x96);
+	LCDWriteData(0x00);
+	LCDWriteData(0x44);
+	LCDWriteData(0x44);
+	LCDWriteRegister(0xe2);
+	LCDWriteData(0x00);
+	LCDWriteData(0x00);
+	LCDWriteData(0x03);
+	LCDWriteData(0x03);
+	LCDWriteData(0x00);
+	LCDWriteData(0x00);
+	LCDWriteData(0x02);
+	LCDWriteData(0x00);
+	LCDWriteData(0x00);
+	LCDWriteData(0x00);
+	LCDWriteData(0x02);
+	LCDWriteData(0x00);
+	LCDWriteRegister(0xe3);
+	LCDWriteData(0x00);
+	LCDWriteData(0x00);
+	LCDWriteData(0x33);
+	LCDWriteData(0x33);
+	LCDWriteRegister(0xe4);
+	LCDWriteData(0x44);
+	LCDWriteData(0x44);
+	LCDWriteRegister(0xe5);
+	LCDWriteData(0x0d);
+	LCDWriteData(0xd4);
+	LCDWriteData(0x28);
+	LCDWriteData(0x8c);
+	LCDWriteData(0x0f);
+	LCDWriteData(0xd6);
+	LCDWriteData(0x28);
+	LCDWriteData(0x8c);
+	LCDWriteData(0x09);
+	LCDWriteData(0xd0);
+	LCDWriteData(0x28);
+	LCDWriteData(0x8c);
+	LCDWriteData(0x0b);
+	LCDWriteData(0xd2);
+	LCDWriteData(0x28);
+	LCDWriteData(0x8c);
+	LCDWriteRegister(0xe6);
+	LCDWriteData(0x00);
+	LCDWriteData(0x00);
+	LCDWriteData(0x33);
+	LCDWriteData(0x33);
+	LCDWriteRegister(0xe7);
+	LCDWriteData(0x44);
+	LCDWriteData(0x44);
+	LCDWriteRegister(0xe8);
+	LCDWriteData(0x0e);
+	LCDWriteData(0xd5);
+	LCDWriteData(0x28);
+	LCDWriteData(0x8c);
+	LCDWriteData(0x10);
+	LCDWriteData(0xd7);
+	LCDWriteData(0x28);
+	LCDWriteData(0x8c);
+	LCDWriteData(0x0a);
+	LCDWriteData(0xd1);
+	LCDWriteData(0x28);
+	LCDWriteData(0x8c);
+	LCDWriteData(0x0c);
+	LCDWriteData(0xd3);
+	LCDWriteData(0x28);
+	LCDWriteData(0x8c);
+	LCDWriteRegister(0xeb);
+	LCDWriteData(0x00);
+	LCDWriteData(0x01);
+	LCDWriteData(0xe4);
+	LCDWriteData(0xe4);
+	LCDWriteData(0x44);
+	LCDWriteData(0x00);
+	LCDWriteRegister(0xed);
+	LCDWriteData(0xf3);
+	LCDWriteData(0xc1);
+	LCDWriteData(0xba);
+	LCDWriteData(0x0f);
+	LCDWriteData(0x66);
+	LCDWriteData(0x77);
+	LCDWriteData(0x44);
+	LCDWriteData(0x55);
+	LCDWriteData(0x55);
+	LCDWriteData(0x44);
+	LCDWriteData(0x77);
+	LCDWriteData(0x66);
+	LCDWriteData(0xf0);
+	LCDWriteData(0xab);
+	LCDWriteData(0x1c);
+	LCDWriteData(0x3f);
+	LCDWriteRegister(0xef);
+	LCDWriteData(0x10);
+	LCDWriteData(0x0d);
+	LCDWriteData(0x04);
+	LCDWriteData(0x08);
+	LCDWriteData(0x3f);
+	LCDWriteData(0x1f);
+	LCDWriteRegister(0xff);
+	LCDWriteData(0x77);
+	LCDWriteData(0x01);
+	LCDWriteData(0x00);
+	LCDWriteData(0x00);
+	LCDWriteData(0x13);
+	LCDWriteRegister(0xe8);
+	LCDWriteData(0x00);
+	LCDWriteData(0x0e);
 
+	LCDWriteRegister(0xe8);
+	LCDWriteData(0x00);
+	LCDWriteData(0x0c);
 	HAL_Delay(10);
-
-	LCDWriteRegister(0xE8);
+	LCDWriteRegister(0xe8);
 	LCDWriteData(0x40);
-	LCDWriteData(0x60);
-
-	LCDWriteRegister(0xFF);
+	LCDWriteData(0x00);
+	LCDWriteRegister(0xff);
 	LCDWriteData(0x77);
 	LCDWriteData(0x01);
 	LCDWriteData(0x00);
@@ -415,22 +363,13 @@ void BuyDisplay_Init() {
 
 	LCDWriteRegister(0x36);
 	LCDWriteData(0x00);
-
 	LCDWriteRegister(0x3A);
-	LCDWriteData(0x36);
-
-	LCDWriteRegister(0x11);			// SLPOUT (11h/1100h): Sleep Out  
+	LCDWriteData(0x66);
+	LCDWriteRegister(0x11);
 	HAL_Delay(120);
-
-	//LCDWriteRegister(0x35);			// TEON (35h/3500h): Tearing Effect Line ON  
-	//LCDWriteData(0x00);
-
-	//LCDWriteRegister(0x3A);			// COLMOD (3Ah/3A00h): Interface Pixel Format  
-	//LCDWriteData(0x55);				// 16bpp for compatibility with LT7680A-R
-	//LCDWriteData(0x66);				// 18bpp
-	
-	LCDWriteRegister(0x29); 		// DISPON (29h/2900h): Display On 
+	LCDWriteRegister(0x29);
 	HAL_Delay(20);
+
 }
 
 

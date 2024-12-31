@@ -106,8 +106,8 @@ void SetCanvasImageWidth_LT(void);
 #define SPI_CS_HIGH()      HAL_GPIO_WritePin(SPI_CS_PORT, SPI_CS_PIN, GPIO_PIN_SET)
 
 // TFT LCD Panel parameters - BuyDisplay (Some of them plus refresh rate are used to calculate CCLK, MCLK & PCLK)
-#define LCD_VBPD				11			// Vertical Back Porch for 240x960 LCD - 0x11
-#define LCD_VFPD				5			// Vertical Front Porch for 240x960 LCD - 0x0C
+#define LCD_VBPD				11			// Vertical Back Porch for 240x960 LCD  - 11 (from example) = 0x17
+#define LCD_VFPD				5			// Vertical Front Porch for 240x960 LCD - 5  (from example) = 0x05
 #define LCD_VSPW				5			// Vertical Start Position
 #define LCD_HBPD				128			// Horizontal Back Porch
 #define LCD_HFPD				5			// Horizontal Front Porch
@@ -142,7 +142,7 @@ void SetCanvasImageWidth_LT(void);
 
 // User
 #define DISP_TEST				0			// Display the LT7680 test card: 1 = test card, 0 = normal operation
-#define BACKLIGHTFULL			100			// Backlighting brightness 0-100%
+#define BACKLIGHTFULL			10			// Backlighting brightness 0-100%
 #define BACKLIGHTOFF			0			// Backlighting brightness 0-100%
 
 #endif

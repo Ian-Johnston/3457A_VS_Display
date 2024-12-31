@@ -371,7 +371,7 @@ void DisplaySplash() {
 			SetTextColors(0x00FF00, 0x000000); // Foreground: Yellow, Background: Black
 			ConfigureFontAndPosition(
 				0b00,    // Internal CGROM
-				0b00,    // Font size
+				0b01,    // Font size
 				0b00,    // ISO 8859-1
 				0,       // Full alignment enabled
 				0,       // Chroma keying disabled
@@ -381,9 +381,9 @@ void DisplaySplash() {
 				1,       // Line spacing
 				4,       // Character spacing
 				Xpos_SPLASH,     // Cursor X
-				100      // Cursor Y
+				270      // Cursor Y
 			);
-			char text[] = "                                                           ";
+			char text[] = "                       ";
 			DrawText(text);
 		}
 		else {
@@ -392,7 +392,7 @@ void DisplaySplash() {
 			SetTextColors(0x00FF00, 0x000000); // Foreground: Yellow, Background: Black
 			ConfigureFontAndPosition(
 				0b00,    // Internal CGROM
-				0b00,    // Font size
+				0b01,    // Font size
 				0b00,    // ISO 8859-1
 				0,       // Full alignment enabled
 				0,       // Chroma keying disabled
@@ -402,7 +402,7 @@ void DisplaySplash() {
 				1,       // Line spacing
 				4,       // Character spacing
 				Xpos_SPLASH,     // Cursor X	230
-				100      // Cursor Y	360
+				270      // Cursor Y	360
 			);
 			char text[] = "TFT LCD by Ian Johnston";
 			DrawText(text);

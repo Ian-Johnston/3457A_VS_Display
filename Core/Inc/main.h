@@ -14,7 +14,6 @@
 extern "C" {
 #endif
 
-
 	
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
@@ -23,7 +22,7 @@ extern "C" {
 void Error_Handler(void);
 
 /* Private defines -----------------------------------------------------------*/
-#define TEST_OUT_Pin GPIO_PIN_13				// PC13 - LED
+#define TEST_OUT_Pin GPIO_PIN_13					// PC13 - LED
 #define TEST_OUT_GPIO_Port GPIOC
 
 //#define OLED_DC_Pin GPIO_PIN_2					// PA2 - not used
@@ -58,16 +57,16 @@ void Error_Handler(void);
 #define DMM_SYNC_GPIO_Port GPIOB
 #define DMM_SYNC_EXTI_IRQn EXTI15_10_IRQn		// This signal initiates read of data
 
-#define DMM_O2_Pin GPIO_PIN_13					// PB13
+#define DMM_O2_Pin GPIO_PIN_1					// PB1
 #define DMM_O2_GPIO_Port GPIOB
 
 #define DMM_INA_Pin GPIO_PIN_15					// PB15
 #define DMM_INA_GPIO_Port GPIOB
 
-#define DMM_ISA_Pin GPIO_PIN_15					// PB14
+#define DMM_ISA_Pin GPIO_PIN_14					// PB14
 #define DMM_ISA_GPIO_Port GPIOB
 
-#define DMM_PWO_Pin GPIO_PIN_15					// PB12
+#define DMM_PWO_Pin GPIO_PIN_12					// PB12
 #define DMM_PWO_GPIO_Port GPIOB
 
 // Note: PB10 lt7680 reset pin is in lt7680.h

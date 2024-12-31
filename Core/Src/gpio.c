@@ -260,9 +260,12 @@ void MX_GPIO_Init(void) {
     __HAL_RCC_GPIOD_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
+
+    __HAL_RCC_TIM3_CLK_ENABLE();  // Enable clock for TIM3
+    __HAL_RCC_AFIO_CLK_ENABLE();  // Enable clock for Alternate Function IO
 	
 
-    // Test output pin
+    // LED - Test output pin
     /* Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(TEST_OUT_GPIO_Port, TEST_OUT_Pin, GPIO_PIN_RESET);
     /* Configure GPIO pin : TEST_OUT_Pin */
@@ -285,33 +288,34 @@ void MX_GPIO_Init(void) {
     // HP3457A I/O pins (serial interface decode)
     // These are 5Vdc tolerant pins on the Blue Pill so can interface directly with the 3457A 5V logic levels
     /* Configure GPIO pin : DMM_SYNC_Pin */
-    GPIO_InitStruct.Pin = DMM_SYNC_Pin;                     // IRQ
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    GPIO_InitStruct.Pin = DMM_SYNC_Pin;                         // Temporary setup for the SYNC pin until LCD etc is setup and running
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;                     // General purpose input
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(DMM_SYNC_GPIO_Port, &GPIO_InitStruct);
 
     /* Configure GPIO pin : DMM_O2_Pin */
     GPIO_InitStruct.Pin = DMM_O2_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    //GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(DMM_O2_GPIO_Port, &GPIO_InitStruct);
 
     /* Configure GPIO pin : DMM_INA_Pin */
     GPIO_InitStruct.Pin = DMM_INA_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(DMM_INA_GPIO_Port, &GPIO_InitStruct);
 
     /* Configure GPIO pin : DMM_PWO_Pin */
     GPIO_InitStruct.Pin = DMM_PWO_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(DMM_PWO_GPIO_Port, &GPIO_InitStruct);
 
     /* Configure GPIO pin : DMM_ISA_Pin */
     GPIO_InitStruct.Pin = DMM_ISA_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(DMM_ISA_GPIO_Port, &GPIO_InitStruct);
 	
 	
@@ -347,15 +351,15 @@ void MX_GPIO_Init(void) {
 
     // Selection header LK2
     // Configure GPIO pin B1
-    GPIO_InitStruct.Pin = GPIO_PIN_1;       // Select pin B1
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT; // Set as input
-    GPIO_InitStruct.Pull = GPIO_PULLUP;   // Enable pull-up resistor
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW; // Low speed is sufficient for input
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    //GPIO_InitStruct.Pin = GPIO_PIN_1;       // Select pin B1
+    //GPIO_InitStruct.Mode = GPIO_MODE_INPUT; // Set as input
+    //GPIO_InitStruct.Pull = GPIO_PULLUP;   // Enable pull-up resistor
+    //GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW; // Low speed is sufficient for input
+    //HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 
     /* EXTI interrupt init */
-    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 1, 0);         // was 0, 0
     HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }
