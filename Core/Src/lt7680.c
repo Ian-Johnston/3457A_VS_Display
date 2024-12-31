@@ -54,9 +54,6 @@ void HardwareReset(void) {
 }
 
 
-//#define RESET_LOW()  HAL_GPIO_WritePin(RESET_PORT, RESET_PIN, GPIO_PIN_RESET)
-//#define RESET_HIGH() HAL_GPIO_WritePin(RESET_PORT, RESET_PIN, GPIO_PIN_SET)
-
 //**************************************************************************************************
 // Core commands
 
@@ -182,114 +179,6 @@ void SendAllToLT7680_LT() {
 
 //******************************************************************************
 // ROUTINES
-
-// UGC symbol - 16x32
-void Ohms16x32SymbolStoreUCG() {
-    // CGRAM_START_ADDR 0x1000  // Base address for CGRAM
-    // UGC_CODE 0x0000 // UGC code for 16/32 & 12x24 OHM symbols
-    // CGRAM ADDR + (UGC_CODE * 64);  // Calculate UCG address for 16x32
-
-    // 16x32 UCG data for the Ohm symbol
-    // written to 1000h
-    uint8_t ohm[64] = {
-        0x00, 0x00,  // Row 1:  0000000000000000        // UCG code = 0000h
-        0x00, 0x00,  // Row 2:  0000000000000000
-        0x00, 0x00,  // Row 3:  0000000000000000
-        0x00, 0x00,  // Row 4:  0000000000000000
-        0x00, 0x00,  // Row 5:  0000000000000000
-        0x00, 0x00,  // Row 6:  0000000000000000
-        0x0F, 0xF0,  // Row 7:  0000111111110000
-        0x1F, 0xF8,  // Row 8:  0001111111111000
-        0x30, 0x0C,  // Row 9:  0011000000001100
-        0x60, 0x06,  // Row 10: 0110000000000110
-        0x60, 0x06,  // Row 11: 0110000000000110
-        0x60, 0x06,  // Row 12: 0110000000000110
-        0x60, 0x06,  // Row 13: 0110000000000110
-        0x60, 0x06,  // Row 14: 0110000000000110
-        0x60, 0x06,  // Row 15: 0110000000000110
-        0x60, 0x06,  // Row 16: 0110000000000110
-        0x60, 0x06,  // Row 17: 0110000000000110
-        0x60, 0x06,  // Row 18: 0110000000000110
-        0x60, 0x06,  // Row 19: 0110000000000110
-        0x30, 0x0C,  // Row 20: 0011000000001100
-        0x18, 0x18,  // Row 21: 0001100000011000
-        0x0C, 0x30,  // Row 22: 0000110000110000
-        0x0C, 0x30,  // Row 23: 0000110000110000
-        0x0C, 0x30,  // Row 24: 0000110000110000
-        0x7C, 0x3E,  // Row 25: 0111110000111110
-        0x7C, 0x3E,  // Row 26: 0111110000111110
-        0x00, 0x00,  // Row 27: 0000000000000000
-        0x00, 0x00,  // Row 28: 0000000000000000
-        0x00, 0x00,  // Row 29: 0000000000000000
-        0x00, 0x00,  // Row 30: 0000000000000000
-        0x00, 0x00,  // Row 31: 0000000000000000
-        0x00, 0x00,  // Row 32: 0000000000000000
-    };
-
-    // Set memory destination for user-characters - 00b user characters
-    WriteRegister(0x03);
-    uint8_t temp = 0;
-    temp |= (0 << 0);
-    temp |= (0 << 1);
-    WriteData(temp);
-
-    for (uint8_t i = 0; i < 64; i++) {
-        WriteRegister(0x04);
-        WriteData(ohm[i]);
-    }
-
-}
-
-
-// UGC symbol - 12x24
-void Ohms12x24SymbolStoreUCG() {
-    // CGRAM_START_ADDR 0x1000  // Base address for CGRAM
-    // UGC_CODE 0x0000 // UGC code for 16/32 & 12x24 OHM symbols
-    // CGRAM ADDR + (UGC_CODE * 48);  // Calculate UCG address for 12x24
-
-    // 12x24 UCG data for the Ohm symbol
-    // written to 1000h
-    uint8_t ohm[48] = {
-        0x00, 0x00,  // Row 1:  000000000000
-        0x00, 0x00,  // Row 2:  000000000000
-        0x00, 0x00,  // Row 3:  000000000000
-        0x00, 0x00,  // Row 4:  000000000000
-        0x00, 0x00,  // Row 5:  000000000000
-        0x07, 0x00,  // Row 6:  000001110000
-        0x0F, 0x80,  // Row 7:  000011111000
-        0x18, 0xC0,  // Row 8:  000110001100
-        0x30, 0x60,  // Row 9:  001100000110
-        0x30, 0x60,  // Row 10: 001100000110
-        0x30, 0x60,  // Row 11: 001100000110
-        0x30, 0x60,  // Row 12: 001100000110
-        0x30, 0x60,  // Row 13: 001100000110
-        0x30, 0x60,  // Row 14: 001100000110
-        0x18, 0xC0,  // Row 15: 000110001100
-        0x0C, 0xC0,  // Row 16: 000011001100
-        0x0C, 0xC0,  // Row 17: 000011001100
-        0x3C, 0xF0,  // Row 18: 011110001111
-        0x3C, 0xF0,  // Row 19: 011110001111
-        0x00, 0x00,  // Row 20: 000000000000
-        0x00, 0x00,  // Row 21: 000000000000
-        0x00, 0x00,  // Row 22: 000000000000
-        0x00, 0x00,  // Row 23: 000000000000
-        0x00, 0x00   // Row 24: 000000000000
-    };
-
-
-    // Set memory destination for user-characters - 00b user characters
-    WriteRegister(0x03);
-    uint8_t temp = 0;
-    temp |= (0 << 0);
-    temp |= (0 << 1);
-    WriteData(temp);
-
-    for (uint8_t i = 0; i < 48; i++) {
-        WriteRegister(0x04);
-        WriteData(ohm[i]);
-    }
-
-}
 
 // Print character to LCD
 void ConfigureFontAndPosition(uint8_t fontSource, uint8_t characterHeight, uint8_t isoCoding, uint8_t fullAlignment, uint8_t chromaKeying, uint8_t rotation, uint8_t widthFactor, uint8_t heightFactor, uint8_t lineGap, uint8_t charSpacing, uint16_t cursorX, uint16_t cursorY) {
