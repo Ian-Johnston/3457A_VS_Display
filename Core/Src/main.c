@@ -9,7 +9,7 @@
   * Visual Studio 2022 with VisualGDB plugin:
   * To upload HEX from VS2022 = BUILD then PROGRAM AND START WITHOUT DEBUGGING
   * Use LIVE WATCH to view variables live debug
-  * 
+  *
   * For use with LT7680A-R & 240x960 TFT LCD
   *
   ******************************************************************************
@@ -31,27 +31,31 @@
 #include "display.h"
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx_hal_tim.h"
+#include <stddef.h>
+
+
+// Interrupt/Timer Priorities:
+// Interrupt			Priority	Description
+// EXTI15_10_IRQn		1			SYNC interrupt(critical timing)
+// TIM3_IRQn			2			3457A O2 signal processing
+// DMA1_Channel3_IRQn	3			SPI DMA for LCD
+// TIM2_IRQn			3			Periodic timer for general tasks
 
 
 //******************************************************************************
 // Variables
 
-#define MAX_BUFFER_SIZE 64
+//#define MAX_BUFFER_SIZE 24
 uint16_t unknownCommandDebug = 0;
 volatile uint8_t debugDataBuffer6 = 0;  // Debugging dataBuffer[6]
 volatile uint8_t debugDataBuffer7 = 0;  // Debugging dataBuffer[7]
 volatile uint16_t debugLastCommandExtracted = 0;  // Debugging last extracted command
-volatile uint8_t debugDecodedData[MAX_BUFFER_SIZE]; // Debug buffer to monitor decoded data
-
 volatile uint16_t lastCommand = 0;            // Last extracted command
 volatile const char* lastCommandDebug = "";   // Debug string for the last command
 volatile uint8_t debugBitIndex = 0;           // Tracks bit position in current byte
 volatile uint8_t byteCounter = 0;             // Tracks the byte index in the buffer
-volatile uint8_t dataBuffer[MAX_BUFFER_SIZE]; // Holds incoming data
-volatile uint8_t decodedData[MAX_BUFFER_SIZE];
+//volatile uint8_t dataBuffer[MAX_BUFFER_SIZE]; // Holds incoming data
 volatile uint8_t decodedDataLength = 0;
-
-volatile uint8_t incomingBits[MAX_BUFFER_SIZE];
 volatile uint8_t bitIndex = 0;
 volatile uint8_t currentMode = 0; // 0: Data, 1: Command
 
@@ -60,9 +64,9 @@ volatile char punctuationString[13]; // Stores punctuation for the 12 digits (nu
 char displayString[13]; // 12 digits + null terminator
 char debugDisplayString[13]; // For Live Watch
 
-volatile uint8_t processBufferFlag = 0;
+volatile uint8_t processBufferFlag = 1;
 
-char DecodeChar(uint8_t charValue);
+//char DecodeChar(uint8_t charValue);
 
 volatile uint8_t debugFlagBitIndexReset = 0; // Tracks the number of times debugBitIndex is reset
 
@@ -72,6 +76,121 @@ volatile uint8_t o2Active = 0; // Flag to track if O2 is currently active
 volatile uint16_t o2PulseCounter = 0; // Counter for O2 pulses in a burst
 volatile uint32_t o2DeadBandCounter = 0; // Counter for dead band between bursts
 volatile uint32_t O2InactiveCounter = 0; // counter
+
+volatile char debugLog[256];
+
+volatile char formattedString[20];
+
+char DecodeChar(uint16_t segmentEncoding);
+
+// Debugging Variables
+//volatile uint8_t debugDataBuffer[MAX_BUFFER_SIZE];  // Track dataBuffer
+//volatile uint8_t debugCharBits[12];                // Track charBits for each digit
+//volatile char debugDecodedChars[12];               // Track decoded characters
+//volatile char debugPunctuation[12];                // Track decoded punctuation
+//volatile char debugFinalString[13];                // Track the final display string
+
+
+
+// Debugging variables for Live Watch
+//volatile uint8_t debugCapturedBits[MAX_BUFFER_SIZE] = { 0 };
+volatile uint8_t debugCurrentMode = 0;
+volatile uint8_t debugCharBits[12] = { 0 };
+volatile char debugDecodedChars[12] = { 0 };
+volatile char debugFinalString[13] = { 0 };
+volatile uint8_t debugRegisterA = 0;
+volatile uint8_t debugRegisterB = 0;
+volatile uint8_t debugRegisterC = 0;
+volatile char debugPunctuation[12] = { 0 };
+
+
+volatile uint8_t debugByteCounter = 0;         // Tracks the value of byteCounter
+volatile uint8_t debugRawRegisterA[6] = { 0 };   // Raw data for Register A
+volatile uint8_t debugRawRegisterB[6] = { 0 };   // Raw data for Register B
+volatile uint8_t debugRawRegisterC[6] = { 0 };   // Raw data for Register C
+
+volatile uint32_t debugInterruptCount = 0; // Count the number of interrupt calls
+
+volatile uint8_t debugFrameComplete = 0;
+
+//volatile uint32_t debugInterruptCount = 0;    // Tracks the number of times the interrupt is triggered
+//volatile uint8_t debugCapturedBits[MAX_BUFFER_SIZE] = { 0 }; // Tracks captured bits for each byte
+
+volatile uint8_t debugSyncState = 0; // Tracks the raw state of the SYNC pin
+
+volatile uint8_t debugCapturedFrame[18] = { 0 }; // Global for Live Watch
+
+volatile uint8_t captureOnceFlag = 0;  // 0: Not captured, 1: Ready to capture
+
+//volatile uint8_t debugO2Callback = 0;
+volatile uint8_t debugO2SyncHigh = 0;
+volatile uint8_t debugO2SyncLow = 0;
+
+
+volatile uint32_t miscCounter = 0;
+
+char formattedDisplay[32];  // Adjust the size to fit your needs (e.g., 12 characters for digits + annotations)
+
+#define MAX_DIGITS 12
+
+// Debugging flags
+uint16_t debugSegmentEncoding;
+char debugDecodedChar;
+
+
+
+
+
+//****************************
+
+
+
+
+// Global variables for debugging
+volatile uint8_t syncState = 5;             // 1 = SYNC high, 0 = SYNC low
+volatile uint32_t syncHighCounter = 0;      // Count O2 edges when SYNC is high
+volatile uint32_t syncLowCounter = 0;       // Count O2 edges when SYNC is low
+volatile uint8_t TEST1 = 0;
+volatile uint8_t TEST2 = 0;
+volatile uint8_t TEST3 = 0;
+
+#define MAX_BUFFER_SIZE 256  // Define the size of the buffer
+
+// Buffers to store captured data
+uint8_t isaBuffer[MAX_BUFFER_SIZE] = { 0 };
+uint8_t inaBuffer[MAX_BUFFER_SIZE] = { 0 };
+
+// Pointers to track the current position in the buffers
+uint16_t isaIndex = 0;
+uint16_t inaIndex = 0;
+
+// Debug variables
+uint16_t debugIsaCount = 0; // Track how many bits are captured in ISA
+uint16_t debugInaCount = 0; // Track how many bits are captured in INA
+uint8_t debugLastIsaData[5] = { 0 }; // Store the last few ISA values
+uint8_t debugLastInaData[5] = { 0 }; // Store the last few INA values
+
+volatile uint32_t debugO2Callback = 0;
+
+//volatile uint8_t debugLastIsaData = 0; // Tracks the last value read from ISA
+//volatile uint8_t debugLastInaData = 0; // Tracks the last value read from INA
+//volatile uint32_t debugIsaCount = 0;   // Counts ISA captures
+//volatile uint32_t debugInaCount = 0;   // Counts INA captures
+
+
+//volatile uint8_t PindebugSyncState = 0;
+//volatile uint8_t PindebugInaState = 0;
+//volatile uint8_t PindebugIsaState = 0;
+//volatile uint8_t PindebugPwoState = 0;
+
+uint32_t isaCombined = 0;
+uint32_t inaCombined = 0;
+
+#define DISPLAY_LENGTH 12  // Number of characters in the main display
+
+// Buffers for decoded data
+char displayString[DISPLAY_LENGTH + 1];  // +1 for null-terminator
+
 
 
 //******************************************************************************
@@ -124,36 +243,50 @@ const uint16_t hp_charset[] = {
 	Da | Dd | Dn | Dr,                  // 26: Z
 	Da | Dd | De | Df,                  // 27: [
 	Dk | Dt,                            // 28: \
-	Da | Db | Dc | Dd,                  // 29: ]
-	Da | Db | Dn | Dr,                  // 30: Top-right pointing arrow
-	Dd,                                 // 31: _
-	0,                                  // 32: Space
-	Dm | Ds,                            // 33: !
-	Df | Dm,                            // 34: "
-	Db | Dc | Dd | Dg1 | Dg2 | Dm | Ds, // 35: #
-	Da | Dc | Dd | Df | Dg1 | Dg2 | Dm | Ds, // $
-	Dc | Df | Dg1 | Dg2 | Dk | Dn | Dr | Dt, // %
-	Da | Dc | Dd | Dk | Dn | Dr | Dt,   // 38: &
-	Dm,                                 // 39: '
-	Dn | Dt,                            // 40: (
-	Dk | Dr,                            // 41: )
-	Dg1 | Dg2 | Dk | Dm | Dn | Dr | Ds | Dt, // *
-	Dg1 | Dg2 | Dm | Ds,                // 43: +
-	Dg1 | Dg2 | Dn | Dt,                // 44: <-
-	Dg1 | Dg2,                          // 45: -
-	Dg1 | Dg2 | Dk | Dr,                // 46: ->
-	Dr | Dn,                            // 47: /
-	Da | Db | Dc | Dd | De | Df | Dn | Dr, // 48: 0
-	Db | Dc,                            // 49: 1
-	Da | Db | Dd | De | Dg1 | Dg2,      // 50: 2
-	Da | Db | Dc | Dd | Dg1 | Dg2,      // 51: 3
-	Db | Dc | Df | Dg1 | Dg2,           // 52: 4
-	Da | Dc | Dd | Dk | Dg2,            // 53: 5
-	Da | Dc | Dd | De | Df | Dg1 | Dg2, // 54: 6
-	Da | Db | Dc,                       // 55: 7
-	Da | Db | Dc | Dd | De | Df | Dg1 | Dg2, // 56: 8
-	Da | Db | Dc | Dd | Df | Dg1 | Dg2  // 57: 9
+	    Da | Db | Dc | Dd,                  // 29: ]
+		Da | Db | Dn | Dr,                  // 30: Top-right pointing arrow
+		Dd,                                 // 31: _
+		0,                                  // 32: Space
+		Dm | Ds,                            // 33: !
+		Df | Dm,                            // 34: "
+		Db | Dc | Dd | Dg1 | Dg2 | Dm | Ds, // 35: #
+		Da | Dc | Dd | Df | Dg1 | Dg2 | Dm | Ds, // $
+		Dc | Df | Dg1 | Dg2 | Dk | Dn | Dr | Dt, // %
+		Da | Dc | Dd | Dk | Dn | Dr | Dt,   // 38: &
+		Dm,                                 // 39: '
+		Dn | Dt,                            // 40: (
+		Dk | Dr,                            // 41: )
+		Dg1 | Dg2 | Dk | Dm | Dn | Dr | Ds | Dt, // *
+		Dg1 | Dg2 | Dm | Ds,                // 43: +
+		Dg1 | Dg2 | Dn | Dt,                // 44: <-
+		Dg1 | Dg2,                          // 45: -
+		Dg1 | Dg2 | Dk | Dr,                // 46: ->
+		Dr | Dn,                            // 47: /
+		Da | Db | Dc | Dd | De | Df | Dn | Dr, // 48: 0
+		Db | Dc,                            // 49: 1
+		Da | Db | Dd | De | Dg1 | Dg2,      // 50: 2
+		Da | Db | Dc | Dd | Dg1 | Dg2,      // 51: 3
+		Db | Dc | Df | Dg1 | Dg2,           // 52: 4
+		Da | Dc | Dd | Dk | Dg2,            // 53: 5
+		Da | Dc | Dd | De | Df | Dg1 | Dg2, // 54: 6
+		Da | Db | Dc,                       // 55: 7
+		Da | Db | Dc | Dd | De | Df | Dg1 | Dg2, // 56: 8
+		Da | Db | Dc | Dd | Df | Dg1 | Dg2  // 57: 9
 };
+
+
+// Punctuation Lookup Table
+const char punctuation_map[] = { ' ', '.', ':', ',' };
+
+// Global Variables for Registers
+uint8_t regA[6], regB[6], regC[6], ina[2];
+
+
+//void DecodeAndFormatDisplay(void);
+//void UpdateCombinedValues(void);
+
+
+
 
 
 //******************************************************************************
@@ -177,152 +310,179 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef* hspi) {
 	}
 }
 
-// 3457A - SYNC pin has gone HIGH, interrupt calls this sub
+
+
+
+
+// SYNC Interrupt Handling
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (GPIO_Pin == DMM_SYNC_Pin) {
-		// Check if PWO is high
-		if (HAL_GPIO_ReadPin(DMM_PWO_GPIO_Port, DMM_PWO_Pin) == GPIO_PIN_SET) {
-			// Handle rising edge of SYNC
-			HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);	// Disable interrupt
-			__HAL_GPIO_EXTI_CLEAR_IT(DMM_SYNC_Pin);	// Clear any pending interrupt flag for SYNC (PB11)
-			HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);		// Re-enable interrupt
-		}
-	}
-}
 
+		// Read the SYNC state and update syncState
+		syncState = HAL_GPIO_ReadPin(DMM_SYNC_GPIO_Port, DMM_SYNC_Pin);
+		//syncState = (DMM_SYNC_GPIO_Port->IDR & DMM_SYNC_Pin) ? GPIO_PIN_SET : GPIO_PIN_RESET;
 
-// 3457A - Captured data via interrupt
-void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim) {
-	if (htim->Instance == TIM3 && htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4) {
-		// Check if PWO is high
-		if (HAL_GPIO_ReadPin(DMM_PWO_GPIO_Port, DMM_PWO_Pin) == GPIO_PIN_SET) {
-			O2Counter++; // Increment O2 pulse counter for debugging
+		//miscCounter++;
 
-			// Determine mode (SYNC high = command mode, low = data mode)
-			currentMode = HAL_GPIO_ReadPin(DMM_SYNC_GPIO_Port, DMM_SYNC_Pin) ? 1 : 0;
-
-			// Read bit from ISA (command) or INA (data)
-			uint8_t bitValue = currentMode
-				? HAL_GPIO_ReadPin(DMM_ISA_GPIO_Port, DMM_ISA_Pin)
-				: HAL_GPIO_ReadPin(DMM_INA_GPIO_Port, DMM_INA_Pin);
-
-			// Append reversed bit order
-			dataBuffer[byteCounter] = (dataBuffer[byteCounter] >> 1) | (bitValue << 7);
-			debugBitIndex++; // Increment bit index
-
-			// Increment byteCounter every 8 bits
-			if (debugBitIndex == 8) {
-				debugFlagBitIndexReset++; // Increment flag when bitIndex resets
-				debugBitIndex = 0;        // Reset bitIndex
-				byteCounter++;            // Move to the next byte
-
-				// Prevent buffer overflow
-				if (byteCounter >= MAX_BUFFER_SIZE) {
-					byteCounter = 0;
-					memset(dataBuffer, 0, MAX_BUFFER_SIZE); // Reset buffer
-				}
-			}
-
-			// Trigger processing if enough data is captured
-			if ((currentMode == 1 && byteCounter >= 2) || (currentMode == 0 && byteCounter >= 8)) {
-				processBufferFlag = 1; // Indicate buffer processing is needed
-			}
+		// Optional debugging or state updates
+		if (syncState == GPIO_PIN_SET) {
+			debugSyncState = 1;  // Rising edge
 		}
 		else {
-			// Handle case when PWO is low (inactive)
-			if (O2Counter > 0) {
-				O2InactiveCounter++; // Count O2 inactive periods
-			}
+			debugSyncState = 0;  // Falling edge
 		}
 	}
 }
 
 
 
-// 3457A - Process the incoming data or command
-void ProcessBuffer() {
-	// Check if PWO is high before processing
-	if (HAL_GPIO_ReadPin(DMM_PWO_GPIO_Port, DMM_PWO_Pin) == GPIO_PIN_SET) {
-		if (currentMode == 0 && byteCounter >= 18) { // Ensure full data frame
-			// Decode the registers to extract the display content
-			DecodeRegisters(&dataBuffer[0], &dataBuffer[6], &dataBuffer[12], displayString);
+// Periodic Monitoring
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
+	if (htim->Instance == TIM3) { // Ensure it's the correct timer
 
-			// Decode punctuation for the display
-			DecodePunctuation(&dataBuffer[6], punctuationString);
+		UpdateCombinedValues();  // Update combined values periodically
 
-			// Debugging: Combine digits and punctuation for Live Watch
-			for (int i = 0; i < 12; i++) {
-				debugDisplayString[i] = displayString[i];
-				if (punctuationString[i] != ' ') {
-					debugDisplayString[i] = punctuationString[i]; // Add punctuation if present
-				}
-			}
-			debugDisplayString[12] = '\0'; // Null-terminate
+		// Read data based on syncState
+		uint8_t data = (syncState == GPIO_PIN_SET)
+			? HAL_GPIO_ReadPin(DMM_ISA_GPIO_Port, DMM_ISA_Pin)
+			: HAL_GPIO_ReadPin(DMM_INA_GPIO_Port, DMM_INA_Pin);
+
+		// Update counters and buffers
+		if (syncState == GPIO_PIN_SET) {
+			syncHighCounter++;  // Increment SYNC high counter
+			isaBuffer[isaIndex++] = data;  // Store ISA data
+			debugIsaCount++;
+			isaIndex %= MAX_BUFFER_SIZE;  // Prevent buffer overflow
 		}
-
-		// Reset buffer after processing
-		byteCounter = 0;
-		memset(dataBuffer, 0, MAX_BUFFER_SIZE);
+		else {
+			syncLowCounter++;  // Increment SYNC low counter
+			inaBuffer[inaIndex++] = data;  // Store INA data
+			debugInaCount++;
+			inaIndex %= MAX_BUFFER_SIZE;  // Prevent buffer overflow
+		}
 	}
 }
 
 
-// 3457A - Decode registers to extract display content
-void DecodeRegisters(const uint8_t* regA, const uint8_t* regB, const uint8_t* regC, char* displayString) {
-	for (int digit = 0; digit < 12; digit++) {
-		// Identify byte index in each register
+
+
+// O2 Edge Capture
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim) {
+	if (htim->Instance == TIM3 && htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1) {
+		uint8_t data = 0; // Temporary variable for data capture
+
+		if (syncState == GPIO_PIN_SET) {
+			// SYNC high: capture ISA
+			data = HAL_GPIO_ReadPin(DMM_ISA_GPIO_Port, DMM_ISA_Pin);
+			isaBuffer[isaIndex++] = data;
+			debugIsaCount++;
+			isaIndex %= MAX_BUFFER_SIZE; // Prevent overflow
+		}
+		else {
+			// SYNC low: capture INA
+			data = HAL_GPIO_ReadPin(DMM_INA_GPIO_Port, DMM_INA_Pin);
+			inaBuffer[inaIndex++] = data;
+			debugInaCount++;
+			inaIndex %= MAX_BUFFER_SIZE; // Prevent overflow
+		}
+
+		// Trigger decoding and formatting after capturing sufficient data
+		if (isaIndex == MAX_BUFFER_SIZE - 1 || inaIndex == MAX_BUFFER_SIZE - 1) {
+			DecodeAndFormatDisplay(); // Call decoding and formatting routine
+		}
+	}
+}
+
+
+// Function to decode a single character
+// Function to decode a single character using the hp_charset[] table
+char DecodeCharacter(uint16_t segmentEncoding) {
+	for (size_t i = 0; i < sizeof(hp_charset) / sizeof(hp_charset[0]); i++) {
+		if (hp_charset[i] == segmentEncoding) {
+			// Map the index to an ASCII character
+			if (i < 32) return '@' + i;          // Letters and symbols
+			if (i >= 48 && i <= 57) return '0' + (i - 48);  // Digits
+			return '?';  // Default for unsupported indices
+		}
+	}
+	return '?';  // Return '?' if not found
+}
+
+
+
+
+
+// Function to decode and format the display
+void DecodeAndFormatDisplay() {
+	memset(displayString, ' ', DISPLAY_LENGTH);  // Initialize display string with spaces
+	displayString[DISPLAY_LENGTH] = '\0';        // Null-terminate the string
+
+	for (int digit = 0; digit < DISPLAY_LENGTH; digit++) {
 		int byteIndex = digit / 2;
+		int bitShift = (digit % 2) * 4;
 
-		// Extract character bits
-		uint8_t charBits = 0;
-		if (digit % 2 == 0) { // Even digits
-			charBits |= (regA[byteIndex] & 0x0F) |         // Lower 4 bits
-				((regB[byteIndex] & 0x03) << 4) | // Middle 2 bits
-				((regC[byteIndex] & 0x01) << 6);  // Upper bit
-		}
-		else { // Odd digits
-			charBits |= ((regA[byteIndex] >> 4) & 0x0F) |        // Lower 4 bits
-				((regB[byteIndex] >> 4) & 0x03) << 4 |  // Middle 2 bits
-				((regC[byteIndex] >> 4) & 0x01) << 6;   // Upper bit
-		}
+		// Decode the 7-bit character encoding
+		uint16_t segmentEncoding = ((isaBuffer[byteIndex] >> bitShift) & 0x0F)  // 4 LSB from ISA
+			| (((inaBuffer[byteIndex] >> bitShift) & 0x03) << 4)  // 2 MSB from INA
+			| (((inaBuffer[byteIndex] >> (bitShift + 2)) & 0x01) << 6);  // Extended bit
 
-		// Map to character
-		displayString[digit] = DecodeChar(charBits);
+		// Decode and store the character
+		displayString[digit] = DecodeCharacter(segmentEncoding);
 	}
-	displayString[12] = '\0'; // Null-terminate the string
+
+	// Debugging: Check displayString in Live Watch
 }
 
 
-// 3457A - Decode punctuation
-void DecodePunctuation(const uint8_t* regB, char* punctuation) {
-	for (int digit = 0; digit < 12; digit++) {
-		int byteIndex = digit / 2;
 
-		// Extract punctuation bits
-		uint8_t punctBits = (digit % 2 == 0)
-			? (regB[byteIndex] >> 2) & 0x03
-			: (regB[byteIndex] >> 6) & 0x03;
 
-		// Map punctuation
-		switch (punctBits) {
-		case 0: punctuation[digit] = ' '; break; // None
-		case 1: punctuation[digit] = '.'; break; // Point
-		case 2: punctuation[digit] = ':'; break; // Colon
-		case 3: punctuation[digit] = ','; break; // Comma
+// Function to update combined values from buffers
+void UpdateCombinedValues(void) {
+	// Combine isaBuffer into a single number
+	isaCombined = 0;
+	for (int i = 0; i < isaIndex; i++) {
+		isaCombined = (isaCombined << 1) | isaBuffer[i];
+	}
+
+	// Combine inaBuffer into a single number
+	inaCombined = 0;
+	for (int i = 0; i < inaIndex; i++) {
+		inaCombined = (inaCombined << 1) | inaBuffer[i];
+	}
+}
+
+
+
+// Function to decode punctuation (using bits from the B register)
+char DecodePunctuation(uint8_t index) {
+	uint8_t byteIndex = index / 2;
+	uint8_t oddDigit = index % 2;
+
+	uint8_t punctuation = (oddDigit) ? ((regB[byteIndex] >> 6) & 0x03) : ((regB[byteIndex] >> 2) & 0x03);
+
+	return punctuation_map[punctuation];
+}
+
+
+// Function to decode annunciators
+void DecodeAnnunciators(char* annunciators) {
+	// Annunciator positions as per the protocol (reverse order in INA bits)
+	const char* annunciator_labels[] = {
+		"SHIFT", "ERR", "REAR", "MATH", "MRNG", "AZOFF",
+		"4W", "AC+DC", "ADRS", "SRQ", "REM", "SMPL"
+	};
+
+	uint16_t inaData = (ina[1] << 8) | ina[0]; // Combine INA bytes
+	strcpy(annunciators, "");                 // Reset annunciator string
+
+	for (int i = 0; i < 12; i++) {
+		if (inaData & (1 << i)) {
+			strcat(annunciators, annunciator_labels[i]);
+			strcat(annunciators, " ");
 		}
 	}
-	punctuation[12] = '\0'; // Null-terminate
 }
 
-
-// 3457A - Decode a single character using the HP charset
-char DecodeChar(uint8_t charValue) {
-	// Ensure charValue is within bounds
-	if (charValue < sizeof(hp_charset) / sizeof(hp_charset[0])) {
-		return hp_charset[charValue];
-	}
-	return '?'; // Unknown character
-}
 
 
 //************************************************************************************************************************************************************
@@ -332,8 +492,8 @@ char DecodeChar(uint8_t charValue) {
 int main(void) {
 
 	//__disable_irq();  // Disable all interrupts
-	HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);			// disable 3457A inputs whilst we set up everything
-	__HAL_GPIO_EXTI_CLEAR_IT(DMM_SYNC_Pin);			// Clear any pending interrupt flag for SYNC (PB11)
+	//HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);			// disable 3457A inputs whilst we set up everything
+	//__HAL_GPIO_EXTI_CLEAR_IT(DMM_SYNC_Pin);			// Clear any pending interrupt flag for SYNC (PB11)
 
 	// Reset of all peripherals, Initializes the Flash interface and the Systick.
 	HAL_Init();
@@ -344,11 +504,18 @@ int main(void) {
 	// Initialize all configured peripherals
 	MX_GPIO_Init();
 	MX_DMA_Init();
-	MX_SPI1_Init();
+	MX_SPI1_Init();		// LT7680A-R
+
+	MX_TIM3_Init();
+	MX_NVIC_Init();
+	HAL_TIM_Base_Start_IT(&htim3);
+
+	// Start the timer
+	//HAL_TIM_Base_Start_IT(&htim3);
 
 
 	// Initialize TIM3 for 3457A Input Capture
-	TIM3_Init_InputCapture();
+	//TIM3_Init_InputCapture();
 
 	// Pull CS high and SCLK low immediately after reset
 	HAL_GPIO_WritePin(LCD_CS_Port, LCD_CS_Pin, GPIO_PIN_SET);			// Pull CS high
@@ -358,7 +525,7 @@ int main(void) {
 	HAL_GPIO_WritePin(RESET_PORT, RESET_PIN, GPIO_PIN_SET);   // Release reset high
 
 	TIM2_Init();					// Initialize the timer
-	
+
 	// Read pin B0 - Set colours for MAIN
 	if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_SET) {
 		// B0 high
@@ -372,7 +539,7 @@ int main(void) {
 	HardwareReset();				// Reset LT7680 - Pull LCM_RESET low for 100ms and wait
 
 	HAL_Delay(1000);
-	
+
 	BuyDisplay_Init();				// Initialize ST7701S BuyDisplay 3.71" driver IC
 
 	HAL_Delay(100);
@@ -384,26 +551,49 @@ int main(void) {
 	// Main loop timer
 	SetTimerDuration(35);			// 35 ms timed action set
 
-	HAL_Delay(5);
+	//HAL_Delay(5);
 	ConfigurePWMAndSetBrightness(BACKLIGHTFULL);  // Configure Timer-1 and PWM-1 for backlighting. Settable 0-100%
 
 	// Reconfigure SYNC pin as an interrupt enabled input now that setup is complete
-	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
-	GPIO_InitStruct.Pin = DMM_SYNC_Pin;            // Specify the pin explicitly
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;    // Enable interrupt on rising edge
-	GPIO_InitStruct.Pull = GPIO_PULLDOWN;          // Configure pull-down resistor
-	HAL_GPIO_Init(DMM_SYNC_GPIO_Port, &GPIO_InitStruct);
+	//GPIO_InitTypeDef GPIO_InitStruct = { 0 };
+	//GPIO_InitStruct.Pin = DMM_SYNC_Pin;            // Specify the pin explicitly
+	//GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;    // Enable interrupt on rising edge
+	//GPIO_InitStruct.Pull = GPIO_PULLDOWN;          // Configure pull-down resistor
+	//HAL_GPIO_Init(DMM_SYNC_GPIO_Port, &GPIO_InitStruct);
 
 	//__enable_irq();
 	__HAL_GPIO_EXTI_CLEAR_IT(DMM_SYNC_Pin);			// Clear any pending interrupt flag for SYNC (PB11)
-	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);			// Ready to accept 3457A inputs
+	//HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);			// Ready to accept 3457A inputs
 
-//**************************************************************************************************
-// Main loop initialize
+	//**************************************************************************************************
+	// Main loop initialize
 
-	Init_Completed_flag = 1; // Now is a safe time to enable the EXTI interrupt handler
+	//Init_Completed_flag = 1; // Now is a safe time to enable the EXTI interrupt handler
 
 	while (1) {			// While loop running continious, full speed
+
+
+		
+			//PindebugSyncState = HAL_GPIO_ReadPin(DMM_SYNC_GPIO_Port, DMM_SYNC_Pin);
+			//PindebugInaState = HAL_GPIO_ReadPin(DMM_INA_GPIO_Port, DMM_INA_Pin);
+			//PindebugIsaState = HAL_GPIO_ReadPin(DMM_ISA_GPIO_Port, DMM_ISA_Pin);
+			//PindebugPwoState = HAL_GPIO_ReadPin(DMM_PWO_GPIO_Port, DMM_PWO_Pin);
+
+
+
+
+
+		//if (processBufferFlag) {
+		//ProcessBuffer();
+		//}
+
+		//HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
+
+
+
+		//debugSyncState = HAL_GPIO_ReadPin(DMM_SYNC_GPIO_Port, DMM_SYNC_Pin); // Track raw SYNC state
+
+
 
 		//myCounter1++;
 
@@ -420,8 +610,7 @@ int main(void) {
 
 		//Process_3457A_Data();		// Acquire data from 3457A
 
-		//Packets_to_chars();         // Convert packets from R6581 to characters
-		//Main_Aux_R6581();           // Get R6581 VFD drive data
+
 
 		task_ready = 1; // Mark tasks as complete so the timer driven code is allowed to run again
 
@@ -433,7 +622,7 @@ int main(void) {
 			task_ready = 0;   // Reset task-ready flag    
 
 			//myCounter2++;
-			
+
 			//HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
 
 			//DisplaySplash();
@@ -441,21 +630,30 @@ int main(void) {
 			HAL_Delay(6); // Allow the LT7680 sufficient processing time
 
 			//DisplayMain();
-			
+
+			//ProcessBuffer();
+			//processBufferFlag = 1;		// ok to go again
+
+
+
+			/*
 			if (processBufferFlag = 1) {
 				processBufferFlag = 0;
 				ProcessBuffer();          // Process data or commands
 
+
+				//snprintf(formattedString, sizeof(formattedString), "%s\n", debugDisplayString);
+
 				// Inline extraction and rendering in your timed action loop
-				char mainReadout[14]; // 13 characters + null terminator
+				//char mainReadout[14]; // 13 characters + null terminator
 				// Assuming `displayString` contains the full decoded display data
-				for (int i = 0; i < 13; i++) {
-					mainReadout[i] = displayString[i]; // Copy up to 13 characters
-				}
-				mainReadout[13] = '\0'; // Null-terminate the string
+				//for (int i = 0; i < 13; i++) {
+				//	mainReadout[i] = displayString[i]; // Copy up to 13 characters
+				//}
+				//mainReadout[13] = '\0'; // Null-terminate the string
 
 				SetTextColors(MainColourFore, 0x000000); // Foreground, Background
-				
+
 				ConfigureFontAndPosition(
 					0b00,    // Internal CGROM
 					0b10,    // Font size
@@ -470,16 +668,17 @@ int main(void) {
 					Xpos_MAIN, // Cursor X
 					0          // Cursor Y
 				);
-				DrawText(mainReadout); // Send the decoded string to the display
+				DrawText(debugDisplayString); // Send the decoded string to the display
 				//DrawText("+ 1.23456  VDC");
 			}
+			*/
 
 
 			//HAL_Delay(6); // Allow the LT7680 sufficient processing time
 
 			//DisplayAux();
 
-			HAL_Delay(6); // Allow the LT7680 sufficient processing time
+			//HAL_Delay(6); // Allow the LT7680 sufficient processing time
 
 			//DisplayAnnunciators();
 

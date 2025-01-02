@@ -1,0 +1,72 @@
+SYNC Behavior
+Purpose: Indicates whether the system is in command mode or data mode.
+Behavior:
+SYNC High (Command Mode):
+  Commands are transmitted on the ISA line.
+  INA is inactive or irrelevant.
+SYNC Low (Data Mode):
+  Data values (e.g., display digits) are transmitted on the INA line.
+  ISA is inactive or irrelevant.
+
+
+
+
+ISA Line Behavior
+Purpose: Transmits commands during SYNC High.
+Expected Observations:
+When SYNC is high, the ISA line transmits a series of bits representing commands.
+The transmitted bits should match known commands like:
+  0x3F0 (Select Display)
+  0x2F0 (Annunciators ON/OFF)
+  0x028 (Write Register A)
+  0x068 (Write Register B)
+  0x0A8 (Write Register C)
+Bits are transmitted LSB first.
+Verify that the ISA bit transitions align with O2 clock edges during SYNC high.
+
+
+
+
+INA Line Behavior
+Purpose: Transmits data values (e.g., digits, punctuation) during SYNC Low.
+Expected Observations:
+When SYNC is low, the INA line transmits data in a similar format to the ISA line.
+Bits represent:
+  Display digits
+  Punctuation marks
+  Annunciators (in specific commands like 0x2F0).
+Data should align with expected digit sequences (e.g., encoded HP charset values).
+Bits are also transmitted LSB first.
+
+
+
+
+Timing and Relationships
+O2 Clock:
+Both ISA and INA bits are sampled on the rising edge of the O2 clock.
+Ensure that the O2 clock transitions occur in the middle of the bit window for proper sampling.
+SYNC-to-ISA/INA Alignment:
+  SYNC High:
+    ISA begins transmitting bits immediately.
+    There should be no delays or gaps in the ISA line.
+  SYNC Low:
+    INA begins transmitting bits immediately.
+    Bits should align with the falling edge of SYNC and rising edge of O2 clock.
+
+
+
+Known Command and Data Structures
+Command Frame (SYNC High, ISA Active):
+  10 bits transmitted per command (e.g., 0x3F0 = 1111110000).
+  Bits should be sent in reverse order (LSB first).
+Data Frame (SYNC Low, INA Active):
+  18 bytes transmitted (6 bytes each for Register A, B, and C).
+  Each byte represents digit data, punctuation, or annunciators.
+
+
+
+Key Observations for Debugging:
+ISA and INA patterns: Look for valid commands (0x3F0, etc.) and numerical data.
+SYNC and O2 alignment: Ensure data is captured on correct clock edges.
+Bit-reversed decoding: Validate that commands and data are properly reversed and interpreted.
+Frame completeness: Confirm all parts of a frame (commands and data) are present and correctly decoded.

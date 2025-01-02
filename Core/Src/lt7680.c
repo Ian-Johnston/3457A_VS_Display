@@ -173,6 +173,7 @@ void SendAllToLT7680_LT() {
    
     Text_Mode();
     ClearScreen();                          // Draws black 'spaces' across the whole screen - fast
+
      
 }
 

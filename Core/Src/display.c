@@ -15,7 +15,7 @@
 #include <string.h>  // For strchr, strncpy
 #include <stdio.h>   // For debugging (optional)
 
-#define DURATION_MS 5000     // 5 seconds in milliseconds
+//#define DURATION_MS 5000     // 5 seconds in milliseconds
 #define TIMER_INTERVAL_MS 35 // The interval of your timed sub in milliseconds
 
 // Display colours default
@@ -101,6 +101,7 @@ void DisplayAnnunciators() {
 
 //******************************************************************************
 
+/*
 void DisplaySplash() {
 
 	// Splash text to display
@@ -154,3 +155,4 @@ void DisplaySplash() {
 	}
 
 }
+*/

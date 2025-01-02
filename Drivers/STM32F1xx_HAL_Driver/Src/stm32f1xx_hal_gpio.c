@@ -543,15 +543,39 @@ HAL_StatusTypeDef HAL_GPIO_LockPin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
   * @param  GPIO_Pin: Specifies the pins connected EXTI line
   * @retval None
   */
+
+
+
+
 void HAL_GPIO_EXTI_IRQHandler(uint16_t GPIO_Pin)
 {
-  /* EXTI line interrupt detected */
+  // EXTI line interrupt detected
   if (__HAL_GPIO_EXTI_GET_IT(GPIO_Pin) != 0x00u)
   {
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_Pin);
     HAL_GPIO_EXTI_Callback(GPIO_Pin);
   }
 }
+
+
+
+/*
+void HAL_GPIO_EXTI_IRQHandler(uint16_t GPIO_Pin) {
+    // EXTI line interrupt detected
+    if (__HAL_GPIO_EXTI_GET_IT(GPIO_Pin) != RESET) {
+        __HAL_GPIO_EXTI_CLEAR_IT(GPIO_Pin); // Clear the interrupt flag
+
+        // Call the user-defined callback
+        HAL_GPIO_EXTI_Callback(GPIO_Pin);
+
+        __HAL_GPIO_EXTI_CLEAR_IT(GPIO_Pin); // Clear the interrupt flag again
+    }
+}
+*/
+
+
+
+
 
 /**
   * @brief  EXTI line detection callbacks.

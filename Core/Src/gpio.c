@@ -289,8 +289,8 @@ void MX_GPIO_Init(void) {
     // HP3457A I/O pins (serial interface decode)
     // These are 5Vdc tolerant pins on the Blue Pill so can interface directly with the 3457A 5V logic levels
     /* Configure GPIO pin : DMM_SYNC_Pin */
-    GPIO_InitStruct.Pin = DMM_SYNC_Pin;                         // Temporary setup for the SYNC pin until LCD etc is setup and running
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;                     // General purpose input
+    GPIO_InitStruct.Pin = DMM_SYNC_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(DMM_SYNC_GPIO_Port, &GPIO_InitStruct);
 
@@ -360,7 +360,7 @@ void MX_GPIO_Init(void) {
 
 
     /* EXTI interrupt init */
-    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 1, 0);         // was 0, 0
+    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 1, 0);  // High priority for SYNC
     HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }

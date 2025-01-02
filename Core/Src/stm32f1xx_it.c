@@ -263,10 +263,20 @@ if (Init_Completed_flag) {
       HAL_SPI_Receive_DMA (&hspi2, rx_buffer, PACKET_WIDTH*PACKET_COUNT);
 }
 */
-  if (Init_Completed_flag) {
+
+
+
+
+
+//  if (Init_Completed_flag) {
       // Call the HAL GPIO EXTI IRQ handler
       HAL_GPIO_EXTI_IRQHandler(DMM_SYNC_Pin);
-  }
+//  }
+
+
+
+
+
 
   /* USER CODE END EXTI15_10_IRQn 0 */
   //HAL_GPIO_EXTI_IRQHandler(VFD_RESTART_Pin);          // not used on 3457A

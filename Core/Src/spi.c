@@ -13,6 +13,7 @@
 SPI_HandleTypeDef hspi1;
 DMA_HandleTypeDef hdma_spi1_tx;
 
+
 // SPI1 init function
 void MX_SPI1_Init(void)                                     // LCD (LT7680)
 {
@@ -33,6 +34,14 @@ void MX_SPI1_Init(void)                                     // LCD (LT7680)
         Error_Handler();
     }
 }
+
+
+/*
+void MX_SPI1_Init(void) {
+    __HAL_RCC_SPI1_CLK_ENABLE();  // Enable SPI1 clock
+    // Do not configure other settings
+}
+*/
 
 
 // SPI MSP Init
