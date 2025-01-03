@@ -45,108 +45,7 @@
 //******************************************************************************
 // Variables
 
-//#define MAX_BUFFER_SIZE 24
-uint16_t unknownCommandDebug = 0;
-volatile uint8_t debugDataBuffer6 = 0;  // Debugging dataBuffer[6]
-volatile uint8_t debugDataBuffer7 = 0;  // Debugging dataBuffer[7]
-volatile uint16_t debugLastCommandExtracted = 0;  // Debugging last extracted command
-volatile uint16_t lastCommand = 0;            // Last extracted command
-volatile const char* lastCommandDebug = "";   // Debug string for the last command
-volatile uint8_t debugBitIndex = 0;           // Tracks bit position in current byte
-volatile uint8_t byteCounter = 0;             // Tracks the byte index in the buffer
-//volatile uint8_t dataBuffer[MAX_BUFFER_SIZE]; // Holds incoming data
-volatile uint8_t decodedDataLength = 0;
-volatile uint8_t bitIndex = 0;
-volatile uint8_t currentMode = 0; // 0: Data, 1: Command
-
-volatile char punctuationString[13]; // Stores punctuation for the 12 digits (null-terminated)
-
-char displayString[13]; // 12 digits + null terminator
-char debugDisplayString[13]; // For Live Watch
-
-volatile uint8_t processBufferFlag = 1;
-
-//char DecodeChar(uint8_t charValue);
-
-volatile uint8_t debugFlagBitIndexReset = 0; // Tracks the number of times debugBitIndex is reset
-
-volatile uint32_t O2Counter = 0; // Counter for O2 clock edges
-
-volatile uint8_t o2Active = 0; // Flag to track if O2 is currently active
-volatile uint16_t o2PulseCounter = 0; // Counter for O2 pulses in a burst
-volatile uint32_t o2DeadBandCounter = 0; // Counter for dead band between bursts
-volatile uint32_t O2InactiveCounter = 0; // counter
-
-volatile char debugLog[256];
-
-volatile char formattedString[20];
-
-char DecodeChar(uint16_t segmentEncoding);
-
-// Debugging Variables
-//volatile uint8_t debugDataBuffer[MAX_BUFFER_SIZE];  // Track dataBuffer
-//volatile uint8_t debugCharBits[12];                // Track charBits for each digit
-//volatile char debugDecodedChars[12];               // Track decoded characters
-//volatile char debugPunctuation[12];                // Track decoded punctuation
-//volatile char debugFinalString[13];                // Track the final display string
-
-
-
-// Debugging variables for Live Watch
-//volatile uint8_t debugCapturedBits[MAX_BUFFER_SIZE] = { 0 };
-volatile uint8_t debugCurrentMode = 0;
-volatile uint8_t debugCharBits[12] = { 0 };
-volatile char debugDecodedChars[12] = { 0 };
-volatile char debugFinalString[13] = { 0 };
-volatile uint8_t debugRegisterA = 0;
-volatile uint8_t debugRegisterB = 0;
-volatile uint8_t debugRegisterC = 0;
-volatile char debugPunctuation[12] = { 0 };
-
-
-volatile uint8_t debugByteCounter = 0;         // Tracks the value of byteCounter
-volatile uint8_t debugRawRegisterA[6] = { 0 };   // Raw data for Register A
-volatile uint8_t debugRawRegisterB[6] = { 0 };   // Raw data for Register B
-volatile uint8_t debugRawRegisterC[6] = { 0 };   // Raw data for Register C
-
-volatile uint32_t debugInterruptCount = 0; // Count the number of interrupt calls
-
-volatile uint8_t debugFrameComplete = 0;
-
-//volatile uint32_t debugInterruptCount = 0;    // Tracks the number of times the interrupt is triggered
-//volatile uint8_t debugCapturedBits[MAX_BUFFER_SIZE] = { 0 }; // Tracks captured bits for each byte
-
 volatile uint8_t debugSyncState = 0; // Tracks the raw state of the SYNC pin
-
-volatile uint8_t debugCapturedFrame[18] = { 0 }; // Global for Live Watch
-
-volatile uint8_t captureOnceFlag = 0;  // 0: Not captured, 1: Ready to capture
-
-//volatile uint8_t debugO2Callback = 0;
-volatile uint8_t debugO2SyncHigh = 0;
-volatile uint8_t debugO2SyncLow = 0;
-
-
-volatile uint32_t miscCounter = 0;
-
-char formattedDisplay[32];  // Adjust the size to fit your needs (e.g., 12 characters for digits + annotations)
-
-#define MAX_DIGITS 12
-
-// Debugging flags
-uint16_t debugSegmentEncoding;
-char debugDecodedChar;
-
-
-
-
-
-//****************************
-
-
-
-
-// Global variables for debugging
 volatile uint8_t syncState = 5;             // 1 = SYNC high, 0 = SYNC low
 volatile uint32_t syncHighCounter = 0;      // Count O2 edges when SYNC is high
 volatile uint32_t syncLowCounter = 0;       // Count O2 edges when SYNC is low
@@ -172,23 +71,11 @@ uint8_t debugLastInaData[5] = { 0 }; // Store the last few INA values
 
 volatile uint32_t debugO2Callback = 0;
 
-//volatile uint8_t debugLastIsaData = 0; // Tracks the last value read from ISA
-//volatile uint8_t debugLastInaData = 0; // Tracks the last value read from INA
-//volatile uint32_t debugIsaCount = 0;   // Counts ISA captures
-//volatile uint32_t debugInaCount = 0;   // Counts INA captures
-
-
-//volatile uint8_t PindebugSyncState = 0;
-//volatile uint8_t PindebugInaState = 0;
-//volatile uint8_t PindebugIsaState = 0;
-//volatile uint8_t PindebugPwoState = 0;
-
 uint32_t isaCombined = 0;
 uint32_t inaCombined = 0;
 
 #define DISPLAY_LENGTH 12  // Number of characters in the main display
 
-// Buffers for decoded data
 char displayString[DISPLAY_LENGTH + 1];  // +1 for null-terminator
 
 
@@ -510,12 +397,6 @@ int main(void) {
 	MX_NVIC_Init();
 	HAL_TIM_Base_Start_IT(&htim3);
 
-	// Start the timer
-	//HAL_TIM_Base_Start_IT(&htim3);
-
-
-	// Initialize TIM3 for 3457A Input Capture
-	//TIM3_Init_InputCapture();
 
 	// Pull CS high and SCLK low immediately after reset
 	HAL_GPIO_WritePin(LCD_CS_Port, LCD_CS_Pin, GPIO_PIN_SET);			// Pull CS high
@@ -554,14 +435,6 @@ int main(void) {
 	//HAL_Delay(5);
 	ConfigurePWMAndSetBrightness(BACKLIGHTFULL);  // Configure Timer-1 and PWM-1 for backlighting. Settable 0-100%
 
-	// Reconfigure SYNC pin as an interrupt enabled input now that setup is complete
-	//GPIO_InitTypeDef GPIO_InitStruct = { 0 };
-	//GPIO_InitStruct.Pin = DMM_SYNC_Pin;            // Specify the pin explicitly
-	//GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;    // Enable interrupt on rising edge
-	//GPIO_InitStruct.Pull = GPIO_PULLDOWN;          // Configure pull-down resistor
-	//HAL_GPIO_Init(DMM_SYNC_GPIO_Port, &GPIO_InitStruct);
-
-	//__enable_irq();
 	__HAL_GPIO_EXTI_CLEAR_IT(DMM_SYNC_Pin);			// Clear any pending interrupt flag for SYNC (PB11)
 	//HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);			// Ready to accept 3457A inputs
 
@@ -571,46 +444,6 @@ int main(void) {
 	//Init_Completed_flag = 1; // Now is a safe time to enable the EXTI interrupt handler
 
 	while (1) {			// While loop running continious, full speed
-
-
-		
-			//PindebugSyncState = HAL_GPIO_ReadPin(DMM_SYNC_GPIO_Port, DMM_SYNC_Pin);
-			//PindebugInaState = HAL_GPIO_ReadPin(DMM_INA_GPIO_Port, DMM_INA_Pin);
-			//PindebugIsaState = HAL_GPIO_ReadPin(DMM_ISA_GPIO_Port, DMM_ISA_Pin);
-			//PindebugPwoState = HAL_GPIO_ReadPin(DMM_PWO_GPIO_Port, DMM_PWO_Pin);
-
-
-
-
-
-		//if (processBufferFlag) {
-		//ProcessBuffer();
-		//}
-
-		//HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
-
-
-
-		//debugSyncState = HAL_GPIO_ReadPin(DMM_SYNC_GPIO_Port, DMM_SYNC_Pin); // Track raw SYNC state
-
-
-
-		//myCounter1++;
-
-		//MirrorSignals();	// TEST
-		//ReadO2AndCount();	// TEST
-
-
-		//if (tim3_capture_flag) {
-		//	ProcessBuffer();
-		//	tim3_capture_flag = 0;                              // Clear flag after handling
-		//}
-
-
-
-		//Process_3457A_Data();		// Acquire data from 3457A
-
-
 
 		task_ready = 1; // Mark tasks as complete so the timer driven code is allowed to run again
 
@@ -623,18 +456,9 @@ int main(void) {
 
 			//myCounter2++;
 
-			//HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
-
-			//DisplaySplash();
+			HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
 
 			HAL_Delay(6); // Allow the LT7680 sufficient processing time
-
-			//DisplayMain();
-
-			//ProcessBuffer();
-			//processBufferFlag = 1;		// ok to go again
-
-
 
 			/*
 			if (processBufferFlag = 1) {
@@ -671,18 +495,8 @@ int main(void) {
 				DrawText(debugDisplayString); // Send the decoded string to the display
 				//DrawText("+ 1.23456  VDC");
 			}
-			*/
-
-
-			//HAL_Delay(6); // Allow the LT7680 sufficient processing time
-
-			//DisplayAux();
-
-			//HAL_Delay(6); // Allow the LT7680 sufficient processing time
-
-			//DisplayAnnunciators();
-
 			HAL_Delay(6); // Allow the LT7680 sufficient processing time
+			*/
 
 		}
 	}
