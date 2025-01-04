@@ -275,6 +275,10 @@ void EXTI15_10_IRQHandler(void)
     HAL_GPIO_EXTI_IRQHandler(DMM_SYNC_Pin); // Clears interrupt flag and calls your callback
 
     syncState = HAL_GPIO_ReadPin(DMM_SYNC_GPIO_Port, DMM_SYNC_Pin);
+
+    //printf("SYNC State Changed: %s\n", (syncState == GPIO_PIN_SET) ? "HIGH" : "LOW");
+
+
     //printf("SYNC State Changed: %s\n", (syncState == GPIO_PIN_SET) ? "HIGH" : "LOW");
 
     //  }

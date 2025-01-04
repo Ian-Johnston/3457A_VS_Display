@@ -40,7 +40,7 @@
 // EXTI15_10_IRQn		1			SYNC interrupt(critical timing)
 // TIM3_IRQn			2			3457A O2 signal processing
 // DMA1_Channel3_IRQn	3			SPI DMA for LCD
-// TIM2_IRQn			3			Periodic timer for general tasks
+// TIM2_IRQn			3			Periodic timer for general tasks - REMOVED
 
 
 TIM_HandleTypeDef htim3; // Definition of htim3
@@ -248,7 +248,7 @@ int main(void) {
 	// Pull LT7680 RESET pin high immediately after reset
 	HAL_GPIO_WritePin(RESET_PORT, RESET_PIN, GPIO_PIN_SET);   // Release reset high
 
-	TIM2_Init();					// Initialize the timer
+	//TIM2_Init();					// Initialize the timer
 
 	// Read pin B0 - Set colours for MAIN
 	if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_SET) {
@@ -273,7 +273,7 @@ int main(void) {
 	HAL_Delay(10);
 
 	// Main loop timer
-	SetTimerDuration(35);			// 35 ms timed action set
+	//SetTimerDuration(35);			// 35 ms timed action set
 
 	//HAL_Delay(5);
 	//ConfigurePWMAndSetBrightness(BACKLIGHTFULL);  // Configure Timer-1 and PWM-1 for backlighting. Settable 0-100%
@@ -290,7 +290,7 @@ int main(void) {
 
 	while (1) {			// While loop running continious, full speed
 
-		task_ready = 1; // Mark tasks as complete so the timer driven code is allowed to run again
+		//task_ready = 1; // Mark tasks as complete so the timer driven code is allowed to run again
 
 
 		// TEST
@@ -314,7 +314,7 @@ int main(void) {
 		//ValidateISAFlags();
 		//ValidateKnownPatterns();
 
-		HAL_Delay(1000); // Delay to avoid flooding the output
+		//HAL_Delay(1000); // Delay to avoid flooding the output
 
 
 		//if (logReady) {
@@ -335,20 +335,20 @@ int main(void) {
 		//*******************************************************************************************
 		// Timed Action - Check if timer flag is set and tasks are ready and run the LCD sub
 		// This loop runs at the SetTimerDuration setting continously AND as long as task_ready is set
-		if (timer_flag && task_ready) {
+		//if (timer_flag && task_ready) {
 
 			//printf("READY TIMER");
 
 
-			timer_flag = 0;   // Clear the timer flag
-			task_ready = 0;   // Reset task-ready flag    
+			//timer_flag = 0;   // Clear the timer flag
+			//task_ready = 0;   // Reset task-ready flag    
 
 			//myCounter2++;
 
 			HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
 
 
-			HAL_Delay(6); // Allow the LT7680 sufficient processing time
+			//HAL_Delay(6); // Allow the LT7680 sufficient processing time
 
 			/*
 			if (processBufferFlag = 1) {
@@ -388,7 +388,7 @@ int main(void) {
 			HAL_Delay(6); // Allow the LT7680 sufficient processing time
 			*/
 
-		}
+		//}
 	}
 
 }

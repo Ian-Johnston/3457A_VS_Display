@@ -18,11 +18,12 @@
 // are met before running the dependent subroutine.  
 
 // Timer flag variables
-volatile uint8_t timer_flag = 0;
-volatile uint8_t task_ready = 0;
+//volatile uint8_t timer_flag = 0;
+//volatile uint8_t task_ready = 0;
 
 uint8_t data = 0;  // Global variable for Live Watch visibility
 
+/*
 // Timer 2 - initialization function
 void TIM2_Init(void) {
     RCC->APB1ENR |= RCC_APB1ENR_TIM2EN; // Enable TIM2 clock
@@ -39,7 +40,9 @@ void TIM2_Init(void) {
 
 
 }
+*/
 
+/*
 // Timer 2 - interrupt handler
 void TIM2_IRQHandler(void) {
 
@@ -49,12 +52,14 @@ void TIM2_IRQHandler(void) {
     }
 }
 
+
 // Timer 2 - Dynamic timer duration setting function
 void SetTimerDuration(uint16_t ms) {
     // Calculate ARR based on the desired duration in milliseconds
     TIM2->ARR = (10 * ms) - 1; // For a 10 kHz timer clock (1 tick = 0.1 ms)
     TIM2->EGR = TIM_EGR_UG;    // Force update to apply changes immediately
 }
+*/
 
 
 
@@ -135,12 +140,16 @@ void LogBuffers(void) {
 
 void DMM_HandleO2Clock(void) {
 
+    //printf("SYNC: %s, PWO: %s, O2 Rising Edge\n",
+    //    (syncState == GPIO_PIN_SET) ? "HIGH" : "LOW",
+    //    (HAL_GPIO_ReadPin(DMM_PWO_GPIO_Port, DMM_PWO_Pin) == GPIO_PIN_SET) ? "HIGH" : "LOW");
+
     if (HAL_GPIO_ReadPin(DMM_PWO_GPIO_Port, DMM_PWO_Pin) == GPIO_PIN_SET) {
 
-        uint8_t isaState = HAL_GPIO_ReadPin(DMM_ISA_GPIO_Port, DMM_ISA_Pin);
-        uint8_t inaState = HAL_GPIO_ReadPin(DMM_INA_GPIO_Port, DMM_INA_Pin);
+        //uint8_t isaState = HAL_GPIO_ReadPin(DMM_ISA_GPIO_Port, DMM_ISA_Pin);
+        //uint8_t inaState = HAL_GPIO_ReadPin(DMM_INA_GPIO_Port, DMM_INA_Pin);
 
-        for (volatile int i = 0; i < 10; i++) __NOP(); // Fine-tune delay as needed
+        //for (volatile int i = 0; i < 20; i++) __NOP(); // Fine-tune delay as needed
 
         if (syncState == GPIO_PIN_SET) {
 
