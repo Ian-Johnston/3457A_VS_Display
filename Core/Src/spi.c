@@ -45,9 +45,9 @@ void MX_SPI1_Init(void) {
 
 
 // SPI MSP Init
-void HAL_SPI_MspInit(SPI_HandleTypeDef *spiHandle)
+void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 {
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitTypeDef GPIO_InitStruct = { 0 };
 
     if (spiHandle->Instance == SPI1)                           // LCD (LT7680)
     {
@@ -66,24 +66,24 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *spiHandle)
         // Configure SCK
         GPIO_InitStruct.Pin = SPI_SCK_PIN;     // PA5
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;       // Alternate function push-pull SPI functions
-	    GPIO_InitStruct.Pull = GPIO_NOPULL;           // Pull-up resistor disabled
+        GPIO_InitStruct.Pull = GPIO_NOPULL;           // Pull-up resistor disabled
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH; // High speed for SPI
         HAL_GPIO_Init(SPI_SCK_PORT, &GPIO_InitStruct);
-	    
+
         // Configure MISO (SPI Master In Slave Out)
         GPIO_InitStruct.Pin = SPI_MISO_PIN;    // PA6
         GPIO_InitStruct.Mode = GPIO_MODE_INPUT;       // Input mode for MISO
         GPIO_InitStruct.Pull = GPIO_PULLUP;           // Pull-up resistor enabled for input
-	    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH; // High speed for SPI
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH; // High speed for SPI
         HAL_GPIO_Init(SPI_MISO_PORT, &GPIO_InitStruct);
 
-	    // Configure MOSI (SPI Master Out Slave In)
+        // Configure MOSI (SPI Master Out Slave In)
         GPIO_InitStruct.Pin = SPI_MOSI_PIN;    // PA7
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;       // Alternate function push-pull SPI functions
         GPIO_InitStruct.Pull = GPIO_NOPULL;           // Pull-up resistor disabled
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH; // High speed for SPI
-        HAL_GPIO_Init(SPI_MOSI_PORT, &GPIO_InitStruct);	    
-	    
+        HAL_GPIO_Init(SPI_MOSI_PORT, &GPIO_InitStruct);
+
         // Configure CS (NSS) as general-purpose output
         GPIO_InitStruct.Pin = SPI_CS_PIN;      // PA4
         GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;   // Output mode
@@ -111,7 +111,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *spiHandle)
 }
 
 /* SPI MSP DeInit */
-void HAL_SPI_MspDeInit(SPI_HandleTypeDef *spiHandle)
+void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 {
     if (spiHandle->Instance == SPI1)                            // LCD (LT7680)
     {

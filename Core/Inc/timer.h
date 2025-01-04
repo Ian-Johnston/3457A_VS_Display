@@ -13,24 +13,35 @@
 #include "stm32f1xx_hal.h"
 #include "stm32f1xx_hal_tim.h" // For TIM APIs and TIM_HandleTypeDef
 
-// External TIM3 handle
-extern TIM_HandleTypeDef htim3;
 
 //***********************************************************************************
 // Timer 2
- 
+
 // Externally accessible variables for TIM2
 extern volatile uint8_t timer_flag;
 extern volatile uint8_t task_ready;
+
+extern volatile uint8_t isaBuffer[256];
+extern volatile uint8_t inaBuffer[256];
 
 // Function prototypes
 void TIM2_Init(void);
 void TIM2_IRQHandler(void);
 void SetTimerDuration(uint16_t ms);
+void DMM_HandleSyncState(void);
 
 
 //***********************************************************************************
 // Timer 3
+
+// External TIM3 handle
+extern TIM_HandleTypeDef htim3;
+
+// External SYNC state variable
+extern volatile uint8_t syncState;
+
+void DMM_HandleO2Clock(void);
+void MX_TIM3_Init(void);
 
 // Externally accessible variables for TIM3
 extern volatile uint16_t captured_value;

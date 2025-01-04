@@ -21,6 +21,11 @@ extern "C" {
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
+
+
+extern volatile uint8_t syncState; // Holds the SYNC pin state
+
+
 /* Private defines -----------------------------------------------------------*/
 #define TEST_OUT_Pin GPIO_PIN_13					// PC13 - LED
 #define TEST_OUT_GPIO_Port GPIOC

@@ -43,13 +43,17 @@
 // TIM2_IRQn			3			Periodic timer for general tasks
 
 
+TIM_HandleTypeDef htim3; // Definition of htim3
+volatile uint8_t syncState = 0; // Definition of syncState
+
+
 //******************************************************************************
 // Variables
 
-volatile uint8_t debugSyncState = 0; // Tracks the raw state of the SYNC pin
-volatile uint8_t syncState = 5;             // 1 = SYNC high, 0 = SYNC low
-volatile uint32_t syncHighCounter = 0;      // Count O2 edges when SYNC is high
-volatile uint32_t syncLowCounter = 0;       // Count O2 edges when SYNC is low
+//volatile uint8_t debugSyncState = 0; // Tracks the raw state of the SYNC pin
+//volatile uint8_t syncState = 5;             // 1 = SYNC high, 0 = SYNC low
+//volatile uint32_t syncHighCounter = 0;      // Count O2 edges when SYNC is high
+//volatile uint32_t syncLowCounter = 0;       // Count O2 edges when SYNC is low
 volatile uint8_t TEST1 = 0;
 volatile uint8_t TEST2 = 0;
 volatile uint8_t TEST3 = 0;
@@ -57,27 +61,33 @@ volatile uint8_t TEST3 = 0;
 #define MAX_BUFFER_SIZE 256  // Define the size of the buffer
 
 // Buffers to store captured data
-uint8_t isaBuffer[MAX_BUFFER_SIZE] = { 0 };
-uint8_t inaBuffer[MAX_BUFFER_SIZE] = { 0 };
+//uint8_t isaBuffer[MAX_BUFFER_SIZE] = { 0 };
+//uint8_t inaBuffer[MAX_BUFFER_SIZE] = { 0 };
 
 // Pointers to track the current position in the buffers
-uint16_t isaIndex = 0;
-uint16_t inaIndex = 0;
+//uint16_t isaIndex = 0;
+//uint16_t inaIndex = 0;
 
 // Debug variables
-uint16_t debugIsaCount = 0; // Track how many bits are captured in ISA
-uint16_t debugInaCount = 0; // Track how many bits are captured in INA
-uint8_t debugLastIsaData[5] = { 0 }; // Store the last few ISA values
-uint8_t debugLastInaData[5] = { 0 }; // Store the last few INA values
+//uint16_t debugIsaCount = 0; // Track how many bits are captured in ISA
+//uint16_t debugInaCount = 0; // Track how many bits are captured in INA
+//uint8_t debugLastIsaData[5] = { 0 }; // Store the last few ISA values
+//uint8_t debugLastInaData[5] = { 0 }; // Store the last few INA values
 
 volatile uint32_t debugO2Callback = 0;
 
-uint32_t isaCombined = 0;
-uint32_t inaCombined = 0;
+//uint32_t isaCombined = 0;
+//uint32_t inaCombined = 0;
 
 #define DISPLAY_LENGTH 12  // Number of characters in the main display
 
 char displayString[DISPLAY_LENGTH + 1];  // +1 for null-terminator
+
+uint8_t isaState = 0;
+uint8_t inaState = 0;
+
+extern volatile uint8_t logReady;
+
 
 
 
@@ -131,35 +141,35 @@ const uint16_t hp_charset[] = {
 	Da | Dd | Dn | Dr,                  // 26: Z
 	Da | Dd | De | Df,                  // 27: [
 	Dk | Dt,                            // 28: \
-	    Da | Db | Dc | Dd,                  // 29: ]
-		Da | Db | Dn | Dr,                  // 30: Top-right pointing arrow
-		Dd,                                 // 31: _
-		0,                                  // 32: Space
-		Dm | Ds,                            // 33: !
-		Df | Dm,                            // 34: "
-		Db | Dc | Dd | Dg1 | Dg2 | Dm | Ds, // 35: #
-		Da | Dc | Dd | Df | Dg1 | Dg2 | Dm | Ds, // $
-		Dc | Df | Dg1 | Dg2 | Dk | Dn | Dr | Dt, // %
-		Da | Dc | Dd | Dk | Dn | Dr | Dt,   // 38: &
-		Dm,                                 // 39: '
-		Dn | Dt,                            // 40: (
-		Dk | Dr,                            // 41: )
-		Dg1 | Dg2 | Dk | Dm | Dn | Dr | Ds | Dt, // *
-		Dg1 | Dg2 | Dm | Ds,                // 43: +
-		Dg1 | Dg2 | Dn | Dt,                // 44: <-
-		Dg1 | Dg2,                          // 45: -
-		Dg1 | Dg2 | Dk | Dr,                // 46: ->
-		Dr | Dn,                            // 47: /
-		Da | Db | Dc | Dd | De | Df | Dn | Dr, // 48: 0
-		Db | Dc,                            // 49: 1
-		Da | Db | Dd | De | Dg1 | Dg2,      // 50: 2
-		Da | Db | Dc | Dd | Dg1 | Dg2,      // 51: 3
-		Db | Dc | Df | Dg1 | Dg2,           // 52: 4
-		Da | Dc | Dd | Dk | Dg2,            // 53: 5
-		Da | Dc | Dd | De | Df | Dg1 | Dg2, // 54: 6
-		Da | Db | Dc,                       // 55: 7
-		Da | Db | Dc | Dd | De | Df | Dg1 | Dg2, // 56: 8
-		Da | Db | Dc | Dd | Df | Dg1 | Dg2  // 57: 9
+		    Da | Db | Dc | Dd,                  // 29: ]
+			Da | Db | Dn | Dr,                  // 30: Top-right pointing arrow
+			Dd,                                 // 31: _
+			0,                                  // 32: Space
+			Dm | Ds,                            // 33: !
+			Df | Dm,                            // 34: "
+			Db | Dc | Dd | Dg1 | Dg2 | Dm | Ds, // 35: #
+			Da | Dc | Dd | Df | Dg1 | Dg2 | Dm | Ds, // $
+			Dc | Df | Dg1 | Dg2 | Dk | Dn | Dr | Dt, // %
+			Da | Dc | Dd | Dk | Dn | Dr | Dt,   // 38: &
+			Dm,                                 // 39: '
+			Dn | Dt,                            // 40: (
+			Dk | Dr,                            // 41: )
+			Dg1 | Dg2 | Dk | Dm | Dn | Dr | Ds | Dt, // *
+			Dg1 | Dg2 | Dm | Ds,                // 43: +
+			Dg1 | Dg2 | Dn | Dt,                // 44: <-
+			Dg1 | Dg2,                          // 45: -
+			Dg1 | Dg2 | Dk | Dr,                // 46: ->
+			Dr | Dn,                            // 47: /
+			Da | Db | Dc | Dd | De | Df | Dn | Dr, // 48: 0
+			Db | Dc,                            // 49: 1
+			Da | Db | Dd | De | Dg1 | Dg2,      // 50: 2
+			Da | Db | Dc | Dd | Dg1 | Dg2,      // 51: 3
+			Db | Dc | Df | Dg1 | Dg2,           // 52: 4
+			Da | Dc | Dd | Dk | Dg2,            // 53: 5
+			Da | Dc | Dd | De | Df | Dg1 | Dg2, // 54: 6
+			Da | Db | Dc,                       // 55: 7
+			Da | Db | Dc | Dd | De | Df | Dg1 | Dg2, // 56: 8
+			Da | Db | Dc | Dd | Df | Dg1 | Dg2  // 57: 9
 };
 
 
@@ -199,177 +209,7 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef* hspi) {
 }
 
 
-
-
-
-// SYNC Interrupt Handling
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	if (GPIO_Pin == DMM_SYNC_Pin) {
-
-		// Read the SYNC state and update syncState
-		syncState = HAL_GPIO_ReadPin(DMM_SYNC_GPIO_Port, DMM_SYNC_Pin);
-		//syncState = (DMM_SYNC_GPIO_Port->IDR & DMM_SYNC_Pin) ? GPIO_PIN_SET : GPIO_PIN_RESET;
-
-		//miscCounter++;
-
-		// Optional debugging or state updates
-		if (syncState == GPIO_PIN_SET) {
-			debugSyncState = 1;  // Rising edge
-		}
-		else {
-			debugSyncState = 0;  // Falling edge
-		}
-	}
-}
-
-
-
-// Periodic Monitoring
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
-	if (htim->Instance == TIM3) { // Ensure it's the correct timer
-
-		UpdateCombinedValues();  // Update combined values periodically
-
-		// Read data based on syncState
-		uint8_t data = (syncState == GPIO_PIN_SET)
-			? HAL_GPIO_ReadPin(DMM_ISA_GPIO_Port, DMM_ISA_Pin)
-			: HAL_GPIO_ReadPin(DMM_INA_GPIO_Port, DMM_INA_Pin);
-
-		// Update counters and buffers
-		if (syncState == GPIO_PIN_SET) {
-			syncHighCounter++;  // Increment SYNC high counter
-			isaBuffer[isaIndex++] = data;  // Store ISA data
-			debugIsaCount++;
-			isaIndex %= MAX_BUFFER_SIZE;  // Prevent buffer overflow
-		}
-		else {
-			syncLowCounter++;  // Increment SYNC low counter
-			inaBuffer[inaIndex++] = data;  // Store INA data
-			debugInaCount++;
-			inaIndex %= MAX_BUFFER_SIZE;  // Prevent buffer overflow
-		}
-	}
-}
-
-
-
-
-// O2 Edge Capture
-void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim) {
-	if (htim->Instance == TIM3 && htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1) {
-		uint8_t data = 0; // Temporary variable for data capture
-
-		if (syncState == GPIO_PIN_SET) {
-			// SYNC high: capture ISA
-			data = HAL_GPIO_ReadPin(DMM_ISA_GPIO_Port, DMM_ISA_Pin);
-			isaBuffer[isaIndex++] = data;
-			debugIsaCount++;
-			isaIndex %= MAX_BUFFER_SIZE; // Prevent overflow
-		}
-		else {
-			// SYNC low: capture INA
-			data = HAL_GPIO_ReadPin(DMM_INA_GPIO_Port, DMM_INA_Pin);
-			inaBuffer[inaIndex++] = data;
-			debugInaCount++;
-			inaIndex %= MAX_BUFFER_SIZE; // Prevent overflow
-		}
-
-		// Trigger decoding and formatting after capturing sufficient data
-		if (isaIndex == MAX_BUFFER_SIZE - 1 || inaIndex == MAX_BUFFER_SIZE - 1) {
-			DecodeAndFormatDisplay(); // Call decoding and formatting routine
-		}
-	}
-}
-
-
-// Function to decode a single character
-// Function to decode a single character using the hp_charset[] table
-char DecodeCharacter(uint16_t segmentEncoding) {
-	for (size_t i = 0; i < sizeof(hp_charset) / sizeof(hp_charset[0]); i++) {
-		if (hp_charset[i] == segmentEncoding) {
-			// Map the index to an ASCII character
-			if (i < 32) return '@' + i;          // Letters and symbols
-			if (i >= 48 && i <= 57) return '0' + (i - 48);  // Digits
-			return '?';  // Default for unsupported indices
-		}
-	}
-	return '?';  // Return '?' if not found
-}
-
-
-
-
-
-// Function to decode and format the display
-void DecodeAndFormatDisplay() {
-	memset(displayString, ' ', DISPLAY_LENGTH);  // Initialize display string with spaces
-	displayString[DISPLAY_LENGTH] = '\0';        // Null-terminate the string
-
-	for (int digit = 0; digit < DISPLAY_LENGTH; digit++) {
-		int byteIndex = digit / 2;
-		int bitShift = (digit % 2) * 4;
-
-		// Decode the 7-bit character encoding
-		uint16_t segmentEncoding = ((isaBuffer[byteIndex] >> bitShift) & 0x0F)  // 4 LSB from ISA
-			| (((inaBuffer[byteIndex] >> bitShift) & 0x03) << 4)  // 2 MSB from INA
-			| (((inaBuffer[byteIndex] >> (bitShift + 2)) & 0x01) << 6);  // Extended bit
-
-		// Decode and store the character
-		displayString[digit] = DecodeCharacter(segmentEncoding);
-	}
-
-	// Debugging: Check displayString in Live Watch
-}
-
-
-
-
-// Function to update combined values from buffers
-void UpdateCombinedValues(void) {
-	// Combine isaBuffer into a single number
-	isaCombined = 0;
-	for (int i = 0; i < isaIndex; i++) {
-		isaCombined = (isaCombined << 1) | isaBuffer[i];
-	}
-
-	// Combine inaBuffer into a single number
-	inaCombined = 0;
-	for (int i = 0; i < inaIndex; i++) {
-		inaCombined = (inaCombined << 1) | inaBuffer[i];
-	}
-}
-
-
-
-// Function to decode punctuation (using bits from the B register)
-char DecodePunctuation(uint8_t index) {
-	uint8_t byteIndex = index / 2;
-	uint8_t oddDigit = index % 2;
-
-	uint8_t punctuation = (oddDigit) ? ((regB[byteIndex] >> 6) & 0x03) : ((regB[byteIndex] >> 2) & 0x03);
-
-	return punctuation_map[punctuation];
-}
-
-
-// Function to decode annunciators
-void DecodeAnnunciators(char* annunciators) {
-	// Annunciator positions as per the protocol (reverse order in INA bits)
-	const char* annunciator_labels[] = {
-		"SHIFT", "ERR", "REAR", "MATH", "MRNG", "AZOFF",
-		"4W", "AC+DC", "ADRS", "SRQ", "REM", "SMPL"
-	};
-
-	uint16_t inaData = (ina[1] << 8) | ina[0]; // Combine INA bytes
-	strcpy(annunciators, "");                 // Reset annunciator string
-
-	for (int i = 0; i < 12; i++) {
-		if (inaData & (1 << i)) {
-			strcat(annunciators, annunciator_labels[i]);
-			strcat(annunciators, " ");
-		}
-	}
-}
+// 3457A Data capture
 
 
 
@@ -392,11 +232,13 @@ int main(void) {
 	// Initialize all configured peripherals
 	MX_GPIO_Init();
 	MX_DMA_Init();
-	MX_SPI1_Init();		// LT7680A-R
+	//MX_SPI1_Init();		// LT7680A-R
 
 	MX_TIM3_Init();
-	MX_NVIC_Init();
-	HAL_TIM_Base_Start_IT(&htim3);
+	
+	//MX_NVIC_Init();
+	
+	HAL_TIM_Base_Start_IT(&htim3);		// O2 clk capture
 
 
 	// Pull CS high and SCLK low immediately after reset
@@ -418,15 +260,15 @@ int main(void) {
 		MainColourFore = 0xFFFF00;		// Yellow
 	}
 
-	HardwareReset();				// Reset LT7680 - Pull LCM_RESET low for 100ms and wait
+	//HardwareReset();				// Reset LT7680 - Pull LCM_RESET low for 100ms and wait
 
 	HAL_Delay(1000);
 
-	BuyDisplay_Init();				// Initialize ST7701S BuyDisplay 3.71" driver IC
+	//BuyDisplay_Init();				// Initialize ST7701S BuyDisplay 3.71" driver IC
 
 	HAL_Delay(100);
 
-	SendAllToLT7680_LT();			// run subs to setup LT7680 based on Levetop info
+	//SendAllToLT7680_LT();			// run subs to setup LT7680 based on Levetop info
 
 	HAL_Delay(10);
 
@@ -434,7 +276,7 @@ int main(void) {
 	SetTimerDuration(35);			// 35 ms timed action set
 
 	//HAL_Delay(5);
-	ConfigurePWMAndSetBrightness(BACKLIGHTFULL);  // Configure Timer-1 and PWM-1 for backlighting. Settable 0-100%
+	//ConfigurePWMAndSetBrightness(BACKLIGHTFULL);  // Configure Timer-1 and PWM-1 for backlighting. Settable 0-100%
 
 	__HAL_GPIO_EXTI_CLEAR_IT(DMM_SYNC_Pin);			// Clear any pending interrupt flag for SYNC (PB11)
 	//HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);			// Ready to accept 3457A inputs
@@ -444,20 +286,67 @@ int main(void) {
 
 	//Init_Completed_flag = 1; // Now is a safe time to enable the EXTI interrupt handler
 
+	//printf("READY");
+
 	while (1) {			// While loop running continious, full speed
 
 		task_ready = 1; // Mark tasks as complete so the timer driven code is allowed to run again
+
+
+		// TEST
+		isaState = HAL_GPIO_ReadPin(DMM_ISA_GPIO_Port, DMM_ISA_Pin);
+		inaState = HAL_GPIO_ReadPin(DMM_INA_GPIO_Port, DMM_INA_Pin);
+		volatile uint8_t debugIsaState = isaState; // Monitor these in Live Watch
+		volatile uint8_t debugInaState = inaState;
+
+		/*
+		printf("Logging ISA and INA Buffers:\n");
+		for (int i = 0; i < MAX_BUFFER_SIZE; i++) {
+			printf("ISA[%d]: 0x%02X, INA[%d]: 0x%02X\n", i, isaBuffer[i], i, inaBuffer[i]);
+		}
+
+		HAL_Delay(1000); // Log every second for readability
+		*/
+
+
+		// Call validation functions
+		//ValidateISAData();
+		//ValidateISAFlags();
+		//ValidateKnownPatterns();
+
+		HAL_Delay(1000); // Delay to avoid flooding the output
+
+
+		//if (logReady) {
+		//	logReady = 0; // Reset the logging flag
+		//	LogBuffers();
+		//}
+
+
+		//printf("SYNC: %s, ISA: %d, INA: %d\n",
+		//	(syncState == GPIO_PIN_SET) ? "HIGH" : "LOW",
+		//	HAL_GPIO_ReadPin(DMM_ISA_GPIO_Port, DMM_ISA_Pin),
+		//	HAL_GPIO_ReadPin(DMM_INA_GPIO_Port, DMM_INA_Pin));
+
+		//HAL_Delay(100); // Log every 100ms for readability
+
+
 
 		//*******************************************************************************************
 		// Timed Action - Check if timer flag is set and tasks are ready and run the LCD sub
 		// This loop runs at the SetTimerDuration setting continously AND as long as task_ready is set
 		if (timer_flag && task_ready) {
+
+			//printf("READY TIMER");
+
+
 			timer_flag = 0;   // Clear the timer flag
 			task_ready = 0;   // Reset task-ready flag    
 
 			//myCounter2++;
 
 			HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
+
 
 			HAL_Delay(6); // Allow the LT7680 sufficient processing time
 
