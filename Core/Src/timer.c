@@ -167,6 +167,10 @@ volatile uint8_t dbg_char8 = 0;
 volatile uint8_t dbg_char8_mapped = 0;
 volatile uint8_t dbg_after_build = 0;
 
+//*************************
+//volatile uint8_t dbgCode[12];
+
+
 
 //***********************************************************************************
 
@@ -706,8 +710,10 @@ static uint8_t HP3457_GetPunct(uint8_t d)
 
 static char HP3457_CodeToAscii(uint8_t code)
 {
-    // 3457A uses 0x3F for '=' in some messages (ADDRESS= etc.)
+    
+    // Replace chars
     if (code == 0x3F) return '=';
+    if (code == 0x1F) return '_';
 
     // Unit letters sometimes arrive without bit6; map 0x00..0x1F to 'A'..'Z' if it fits
     if (code < 0x20) {
@@ -736,6 +742,12 @@ void HP3457_BuildDisplayString(char out12[13], char punct12[13])
         uint8_t p = HP3457_GetPunct(d);
         punct12[i] = (p == 1) ? '.' : (p == 2) ? ':' : (p == 3) ? ',' : ' ';
     }
+
+    // Use this to live watch in order to get code for ? chars - live watch ---> dbgCode[12]
+    //for (int i = 0; i < 12; i++) {
+    //    uint8_t d = (uint8_t)(i + 1);
+    //    dbgCode[i] = HP3457_GetCharCode(d);
+    //}
 
     out12[12] = '\0';
     punct12[12] = '\0';
