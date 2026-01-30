@@ -489,55 +489,6 @@ void SoftwareReset(void) {       // From LT7680 datasheet
 
 //**************************************************************/
 
-/*
-void ClearScreen(uint32_t color) {
-    
-	SetBackgroundColor(color);
-    WriteRegister(0x2C); // Memory Write
-
-	
-    for (uint32_t i = 0; i < (320 * 960); i++) {            // NOTE: This is slow, will inhibit startup by a few secs
-        WriteData((color >> 16) & 0xFF); // Red
-        WriteData((color >> 8) & 0xFF);  // Green
-        WriteData(color & 0xFF);         // Blue
-    }
-  
-	
-	uint8_t red = (color >> 16) & 0xFF;
-    uint8_t green = (color >> 8) & 0xFF;
-    uint8_t blue = color & 0xFF;
-
-    WriteRegister(0x01); // Example: Clear Screen Command
-    WriteData(red);
-    WriteData(green);
-    WriteData(blue);
-    
-}
-*/
-
-
-/*
-void SetTextColor(uint32_t color) {
-    uint8_t red = (color >> 16) & 0xFF;
-    uint8_t green = (color >> 8) & 0xFF;
-    uint8_t blue = color & 0xFF;
-
-    WriteRegister(0x02); // Example: Set Text Color Command
-    WriteData(red);
-    WriteData(green);
-    WriteData(blue);
-}
-*/
-
-
-//void SetFont(uint8_t fontIndex) {
-//    WriteRegister(0x03); // Example: Set Font Command
-//    WriteData(fontIndex);
-//}
-
-
-
-
 void SetBacklightFull(void) {
 	
 	WriteRegister(0x84); // Set Prescaler Register (adjust as needed)

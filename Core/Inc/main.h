@@ -22,33 +22,12 @@ extern "C" {
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
-
-
 extern volatile uint8_t syncState; // Holds the SYNC pin state
-
-
-
-
 
 /* Private defines -----------------------------------------------------------*/
 #define TEST_OUT_Pin GPIO_PIN_13					// PC13 - LED
 #define TEST_OUT_GPIO_Port GPIOC
 
-//#define OLED_DC_Pin GPIO_PIN_2					// PA2 - not used
-//#define OLED_DC_GPIO_Port GPIOA
-
-//#define OLED_RES_Pin GPIO_PIN_3					// PA3 - not used
-//#define OLED_RES_GPIO_Port GPIOA
-
-//#define OLED_CS_Pin GPIO_PIN_4					// PA4 - CS
-//#define OLED_CS_GPIO_Port GPIOA
-
-//#define OLED_SCK_Pin GPIO_PIN_5					// PA5 - SCK
-//#define OLED_SCK_GPIO_Port GPIOA
-
-//#define OLED_SDA_Pin GPIO_PIN_7					// PA7 - MOSI
-//#define OLED_SDA_GPIO_Port GPIOA
-	
 // SPI Pin Definitions
 #define SPI_SCK_PIN        GPIO_PIN_5       // SCK = PA5
 #define SPI_SCK_PORT       GPIOA

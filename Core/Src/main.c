@@ -34,50 +34,18 @@
 #include "stm32f1xx_hal_tim.h"
 #include <stddef.h>
 
-
-// Interrupt/Timer Priorities:
-// Interrupt			Priority	Description
-// EXTI15_10_IRQn		1			SYNC interrupt(critical timing)
-// TIM3_IRQn			2			3457A O2 signal processing
-// DMA1_Channel3_IRQn	3			SPI DMA for LCD
-// TIM2_IRQn			3			Periodic timer for general tasks - REMOVED
-
-
 TIM_HandleTypeDef htim3; // Definition of htim3
-//volatile uint8_t syncState = 0; // Definition of syncState
-
 
 //******************************************************************************
 // Variables
 
-//volatile uint8_t debugSyncState = 0; // Tracks the raw state of the SYNC pin
-//volatile uint8_t syncState = 5;             // 1 = SYNC high, 0 = SYNC low
-//volatile uint32_t syncHighCounter = 0;      // Count O2 edges when SYNC is high
-//volatile uint32_t syncLowCounter = 0;       // Count O2 edges when SYNC is low
 volatile uint8_t TEST1 = 0;
 volatile uint8_t TEST2 = 0;
 volatile uint8_t TEST3 = 0;
 
 #define MAX_BUFFER_SIZE 256  // Define the size of the buffer
 
-// Buffers to store captured data
-//uint8_t isaBuffer[MAX_BUFFER_SIZE] = { 0 };
-//uint8_t inaBuffer[MAX_BUFFER_SIZE] = { 0 };
-
-// Pointers to track the current position in the buffers
-//uint16_t isaIndex = 0;
-//uint16_t inaIndex = 0;
-
-// Debug variables
-//uint16_t debugIsaCount = 0; // Track how many bits are captured in ISA
-//uint16_t debugInaCount = 0; // Track how many bits are captured in INA
-//uint8_t debugLastIsaData[5] = { 0 }; // Store the last few ISA values
-//uint8_t debugLastInaData[5] = { 0 }; // Store the last few INA values
-
 volatile uint32_t debugO2Callback = 0;
-
-//uint32_t isaCombined = 0;
-//uint32_t inaCombined = 0;
 
 #define DISPLAY_LENGTH 12  // Number of characters in the main display
 
@@ -106,82 +74,6 @@ extern volatile uint8_t logReady;
 #define Dt 0x800
 #define Dn 0x1000
 #define Dr 0x2000
-
-// HP Charset lookup table
-const uint16_t hp_charset[] = {
-	Da | Db | Dd | De | Df | Dg2 | Dm,  // 0 : @
-	Da | Db | Dc | De | Df | Dg1 | Dg2, // 1 : A
-	Da | Db | Dc | Dd | Dg2 | Dm | Ds,  // 2 : B
-	Da | Dd | De | Df,                  // 3 : C
-	Da | Db | Dc | Dd | Dm | Ds,        // 4 : D
-	Da | Dd | De | Df | Dg1 | Dg2,      // 5 : E
-	Da | De | Df | Dg1 | Dg2,           // 6 : F
-	Da | Dc | Dd | De | Df | Dg2,       // 7 : G
-	Db | Dc | De | Df | Dg1 | Dg2,      // 8 : H
-	Da | Dd | Dm | Ds,                  // 9 : I
-	Db | Dc | Dd | De,                  // 10: J
-	De | Df | Dg1 | Dn | Dt,            // 11: K
-	Dd | De | Df,                       // 12: L
-	Db | Dc | De | Df | Dk | Dn,        // 13: M
-	Db | Dc | De | Df | Dk | Dt,        // 14: N
-	Da | Db | Dc | Dd | De | Df,        // 15: O
-	Da | Db | De | Df | Dg1 | Dg2,      // 16: P
-	Da | Db | Dc | Dd | De | Df | Dt,   // 17: Q
-	Da | Db | De | Df | Dg1 | Dg2 | Dt, // 18: R
-	Da | Dc | Dd | Df | Dg1 | Dg2,      // 19: S
-	Da | Dm | Ds,                       // 20: T
-	Db | Dc | Dd | De | Df,             // 21: U
-	De | Df | Dn | Dr,                  // 22: V
-	Db | Dc | De | Df | Dr | Dt,        // 23: W
-	Dk | Dn | Dr | Dt,                  // 24: X
-	Dk | Dn | Ds,                       // 25: Y
-	Da | Dd | Dn | Dr,                  // 26: Z
-	Da | Dd | De | Df,                  // 27: [
-	Dk | Dt,                            // 28: \
-	Da | Db | Dc | Dd,                  // 29: ]
-	Da | Db | Dn | Dr,                  // 30: Top-right pointing arrow
-	Dd,                                 // 31: _
-	0,                                  // 32: Space
-	Dm | Ds,                            // 33: !
-	Df | Dm,                            // 34: "
-	Db | Dc | Dd | Dg1 | Dg2 | Dm | Ds, // 35: #
-	Da | Dc | Dd | Df | Dg1 | Dg2 | Dm | Ds, // $
-	Dc | Df | Dg1 | Dg2 | Dk | Dn | Dr | Dt, // %
-	Da | Dc | Dd | Dk | Dn | Dr | Dt,   // 38: &
-	Dm,                                 // 39: '
-	Dn | Dt,                            // 40: (
-	Dk | Dr,                            // 41: )
-	Dg1 | Dg2 | Dk | Dm | Dn | Dr | Ds | Dt, // *
-	Dg1 | Dg2 | Dm | Ds,                // 43: +
-	Dg1 | Dg2 | Dn | Dt,                // 44: <-
-	Dg1 | Dg2,                          // 45: -
-	Dg1 | Dg2 | Dk | Dr,                // 46: ->
-	Dr | Dn,                            // 47: /
-	Da | Db | Dc | Dd | De | Df | Dn | Dr, // 48: 0
-	Db | Dc,                            // 49: 1
-	Da | Db | Dd | De | Dg1 | Dg2,      // 50: 2
-	Da | Db | Dc | Dd | Dg1 | Dg2,      // 51: 3
-	Db | Dc | Df | Dg1 | Dg2,           // 52: 4
-	Da | Dc | Dd | Dk | Dg2,            // 53: 5
-	Da | Dc | Dd | De | Df | Dg1 | Dg2, // 54: 6
-	Da | Db | Dc,                       // 55: 7
-	Da | Db | Dc | Dd | De | Df | Dg1 | Dg2, // 56: 8
-	Da | Db | Dc | Dd | Df | Dg1 | Dg2  // 57: 9
-};
-
-
-// Punctuation Lookup Table
-const char punctuation_map[] = { ' ', '.', ':', ',' };
-
-// Global Variables for Registers
-//uint8_t regA[6], regB[6], regC[6], ina[2];
-
-
-//void DecodeAndFormatDisplay(void);
-//void UpdateCombinedValues(void);
-
-
-
 
 
 //******************************************************************************
@@ -212,10 +104,6 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef* hspi) {
 // Main
 int main(void) {
 
-	//__disable_irq();  // Disable all interrupts
-	//HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);			// disable 3457A inputs whilst we set up everything
-	//__HAL_GPIO_EXTI_CLEAR_IT(DMM_SYNC_Pin);			// Clear any pending interrupt flag for SYNC (PB11)
-
 	// Reset of all peripherals, Initializes the Flash interface and the Systick.
 	HAL_Init();
 
@@ -229,8 +117,6 @@ int main(void) {
 
 	MX_TIM3_Init();
 
-	//MX_NVIC_Init();
-
 	// Start TIM3 input-capture on CH4 (PB1 = TIM3_CH4)
 	HAL_TIM_IC_Start_IT(&htim3, TIM_CHANNEL_4);
 
@@ -241,8 +127,6 @@ int main(void) {
 
 	// Pull LT7680 RESET pin high immediately after reset
 	HAL_GPIO_WritePin(RESET_PORT, RESET_PIN, GPIO_PIN_SET);   // Release reset high
-
-	//TIM2_Init();					// Initialize the timer
 
 	// Read pin B0 - Set colours for MAIN
 	if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_SET) {
@@ -298,17 +182,11 @@ int main(void) {
 	__HAL_GPIO_EXTI_CLEAR_IT(DMM_SYNC_Pin);			// Clear any pending interrupt flag for SYNC (PB11)
 	//HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);			// Ready to accept 3457A inputs
 
+
 	//**************************************************************************************************
 	// Main loop initialize
 
-	//Init_Completed_flag = 1; // Now is a safe time to enable the EXTI interrupt handler
-
-	//printf("READY");
-
 	while (1) {			// While loop running continious, full speed
-
-		//task_ready = 1; // Mark tasks as complete so the timer driven code is allowed to run again
-
 
 		// TEST
 		isaState = HAL_GPIO_ReadPin(DMM_ISA_GPIO_Port, DMM_ISA_Pin);
@@ -316,105 +194,15 @@ int main(void) {
 		volatile uint8_t debugIsaState = isaState; // Monitor these in Live Watch
 		volatile uint8_t debugInaState = inaState;
 
-		/*
-		printf("Logging ISA and INA Buffers:\n");
-		for (int i = 0; i < MAX_BUFFER_SIZE; i++) {
-			printf("ISA[%d]: 0x%02X, INA[%d]: 0x%02X\n", i, isaBuffer[i], i, inaBuffer[i]);
-		}
+		HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
 
-		HAL_Delay(1000); // Log every second for readability
-		*/
+		DisplayMain();
 
+		HAL_Delay(10);
 
-		// Call validation functions
-		//ValidateISAData();
-		//ValidateISAFlags();
-		//ValidateKnownPatterns();
+		DisplayAnnunciators();
 
-		//HAL_Delay(1000); // Delay to avoid flooding the output
-
-
-		//if (logReady) {
-		//	logReady = 0; // Reset the logging flag
-		//	LogBuffers();
-		//}
-
-
-		//printf("SYNC: %s, ISA: %d, INA: %d\n",
-		//	(syncState == GPIO_PIN_SET) ? "HIGH" : "LOW",
-		//	HAL_GPIO_ReadPin(DMM_ISA_GPIO_Port, DMM_ISA_Pin),
-		//	HAL_GPIO_ReadPin(DMM_INA_GPIO_Port, DMM_INA_Pin));
-
-		//HAL_Delay(100); // Log every 100ms for readability
-
-
-
-		//*******************************************************************************************
-		// Timed Action - Check if timer flag is set and tasks are ready and run the LCD sub
-		// This loop runs at the SetTimerDuration setting continously AND as long as task_ready is set
-		//if (timer_flag && task_ready) {
-
-			//printf("READY TIMER");
-
-
-			//timer_flag = 0;   // Clear the timer flag
-			//task_ready = 0;   // Reset task-ready flag    
-
-			//myCounter2++;
-
-			HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
-
-
-			//HAL_Delay(6); // Allow the LT7680 sufficient processing time
-
-			/*
-			if (processBufferFlag = 1) {
-				processBufferFlag = 0;
-				ProcessBuffer();          // Process data or commands
-
-
-				//snprintf(formattedString, sizeof(formattedString), "%s\n", debugDisplayString);
-
-				// Inline extraction and rendering in your timed action loop
-				//char mainReadout[14]; // 13 characters + null terminator
-				// Assuming `displayString` contains the full decoded display data
-				//for (int i = 0; i < 13; i++) {
-				//	mainReadout[i] = displayString[i]; // Copy up to 13 characters
-				//}
-				//mainReadout[13] = '\0'; // Null-terminate the string
-
-				SetTextColors(MainColourFore, 0x000000); // Foreground, Background
-
-				ConfigureFontAndPosition(
-					0b00,    // Internal CGROM
-					0b10,    // Font size
-					0b00,    // ISO 8859-1
-					0,       // Full alignment enabled
-					0,       // Chroma keying disabled
-					1,       // Rotate 90 degrees counterclockwise
-					0b11,    // Width multiplier
-					0b11,    // Height multiplier
-					1,       // Line spacing
-					4,       // Character spacing
-					Xpos_MAIN, // Cursor X
-					0          // Cursor Y
-				);
-				DrawText(debugDisplayString); // Send the decoded string to the display
-				//DrawText("+ 1.23456  VDC");
-			}
-			HAL_Delay(6); // Allow the LT7680 sufficient processing time
-			*/
-
-		//}
-
-
-			DisplayMain();
-
-			HAL_Delay(10);
-
-			DisplayAnnunciators();
-
-			HAL_Delay(10);
+		HAL_Delay(10);
 	}
 
 }

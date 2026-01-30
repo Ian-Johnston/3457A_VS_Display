@@ -36,9 +36,6 @@ extern volatile char punctStr[13];
 extern volatile char displayWithPunct[32];
 extern volatile uint8_t Annunc[13];
 
-
-
-
 //***********************************************************************************
 // Timer 3
 
