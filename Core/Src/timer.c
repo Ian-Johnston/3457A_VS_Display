@@ -61,55 +61,21 @@ void SetTimerDuration(uint16_t ms) {
 }
 
 
-
-
 //***********************************************************************************
 // Timer 3 - 3457A Input Capture Functionality
 
 /* Buffers for Data Capture */
 #define MAX_BUFFER_SIZE 256
 
-
 volatile uint8_t isaBuffer[MAX_BUFFER_SIZE];
 volatile uint8_t inaBuffer[MAX_BUFFER_SIZE];
-
-
-
 static uint16_t isaIndex = 0;
 static uint16_t inaIndex = 0;
-
-volatile uint8_t debugIsaByte = 0;
-volatile uint8_t debugInaByte = 0;
-
-volatile uint32_t ISAo2InterruptCount = 0;
-volatile uint32_t INAo2InterruptCount = 0;
-
 #define LOG_TRIGGER_COUNT 256 // Log after 256 samples
 
-
-volatile uint8_t loggedIsa[MAX_BUFFER_SIZE];
-volatile uint8_t loggedIna[MAX_BUFFER_SIZE];
-
-
-volatile uint8_t logReady = 0;
-
-volatile uint16_t debugIsaIndex = 0;
-volatile uint16_t debugInaIndex = 0;
-
-volatile uint8_t isLogging = 0;
-
-
 /* Private Function Prototypes */
-static void ProcessCapturedData(void);
-
-volatile uint32_t logReadySetCount = 0;
-
-volatile uint32_t logExecutionCount = 0;
-
 volatile uint8_t bufferFull = 0; // Indicates if the buffer is full
-
 volatile uint8_t syncState = 0;
-
 volatile uint32_t O2Count;
 volatile uint32_t ISAcount = 0;
 volatile uint32_t INAcount = 0;
@@ -143,141 +109,66 @@ volatile uint8_t punctCode[12];   // 0..3 (none, '.', ':', ',')
 static void DecodeAllDigits(void);
 
 volatile uint8_t lastExpected = 0;
-
-volatile uint8_t inaBitCountLive = 0;
-
-volatile uint8_t lastPayloadCount = 0;
-volatile uint16_t lastPayloadCmd = 0;
-
 volatile uint32_t cmd028Count = 0;
 volatile uint32_t cmd068Count = 0;
 volatile uint32_t cmd0A8Count = 0;
 volatile uint32_t cmd2F0Count = 0;
-
-volatile uint8_t cmdArmed = 0;
-
 volatile uint16_t lastCmd2 = 0;
-
 volatile uint16_t cmdSeen[8] = { 0 };
 volatile uint32_t cmdSeenCount[8] = { 0 };
-
 static void TrackCmd(uint16_t cmd);
-
 volatile uint8_t digitVal[12];   // 0–9, or 0xF for blank
-
 static void DecodeDigitsFromRegA(void);
-
 volatile int8_t digitDec[12];
-
 volatile uint8_t  regX[6];          // payload after 0x2E0 (candidate “Reg B”)
 volatile uint32_t cmd2E0Count = 0;  // Live Watch
-
 volatile uint32_t cmdIgnoredCount = 0;
-
-volatile uint16_t payloadStartCmd = 0;
-volatile uint8_t  payloadStartTarget = 0;
-volatile uint8_t  payloadStartExpected = 0;
-
 volatile uint8_t numStart = 0;
 volatile uint8_t numLen = 0;
 volatile uint8_t numDigits[12];
-
 static void ExtractBestRun(void);
-
-volatile uint32_t regAFrames = 0;
-volatile uint8_t  regALast[6] = { 0 };
-
-volatile uint32_t regACrc = 0;
-volatile uint32_t regACrcPrev = 0;
-volatile uint8_t  regAChanged = 0;
-
 volatile uint8_t regANib[12];      // 12 nibbles extracted from regA
 volatile uint8_t regANibPrev[12];
 volatile uint8_t regANibChanged[12]; // 1 if that nibble changed this frame
-
 static void ExtractRegANibbles(void);
-
 volatile uint8_t lsdNibIdx = 4;       // you’ve found this
-volatile uint8_t lsdNibVal = 0;
-volatile uint32_t lsdNibToggles = 0;
-
 volatile uint16_t changedMask;
-
-volatile uint8_t valueDigits[6];
-
 volatile uint8_t digitNibIdx[6] = { 4, 5, 6, 7, 8, 9 };  // LSD..MSD
-
-volatile uint32_t cmd028Seen = 0, cmd2F0Seen = 0, cmdOtherSeen = 0;
-
-// ---- ISA/INA framing ----
-// Each transfer chunk is: 2 dummy bits (always 0) + 8 useful bits, LSB-first.
-// We (re)align on SYNC edges (and PWO gating).
 static uint8_t tenCount = 0;       // 0..9 within current 10-bit chunk
 static uint8_t byteShift = 0;      // assembled 8-bit value, LSB-first
 static uint8_t byteBitCount = 0;   // 0..7
-
 volatile uint32_t isaBranchHits = 0;
-volatile uint32_t isaCmdComplete = 0;
-
 volatile uint8_t lastCmdRawLSB = 0;  // debug only (same as lastCmdRaw now)
 volatile uint8_t lastCmdRawMSB = 0;  // retained for Live Watch compatibility
 volatile uint8_t lastCmdRaw = 0;
-
 static uint16_t isa10 = 0;
 static uint8_t  isaBitCount = 0;
 static uint8_t  inaGap2 = 0;      // counts down 2->0 after SYNC falls
-
 volatile uint16_t lastCmd10 = 0;
-volatile uint16_t lastCmd10_prev = 0;
-
 volatile uint32_t cmdOtherCount = 0;
 volatile uint32_t cmd068NearCount = 0;   // counts commands in 0x060..0x06F
 volatile uint32_t cmd0A8NearCount = 0;   // counts commands in 0x0A0..0x0AF
-
 volatile uint16_t cmdRing[16];
 volatile uint8_t  cmdRingIdx = 0;
-
-static uint8_t skipThisClock = 0;
-
 volatile uint32_t regCWrites = 0;
 volatile uint8_t  lastRegC[6];
-
 volatile uint16_t lastCmdAtRegC = 0;
 volatile uint32_t regCNonZeroWrites = 0;
-
-//char displayStr[13];   // 12 chars + null terminator
-//char punctStr[13];     // optional: punctuation per digit
-
-//char displayWithPunct[32];
-
 volatile uint8_t dbgCode[12];
-
 static uint8_t HP3457_GetCharCode(uint8_t d);
 static uint8_t HP3457_GetPunct(uint8_t d);
-
 volatile uint8_t dbgCode_alt[12];
-
-//char displayWithPunct[32];
-
-
 static uint8_t HP3457_GetCharCode_Alt(uint8_t d);
-
 volatile char displayStr[13];       // 12 chars + \0
 volatile char punctStr[13];         // punctuation per digit + \0
 volatile char displayWithPunct[32]; // debug/combined string + \0
-
 volatile uint8_t Annunc[13];   // use indices 1..12, ignore 0
-
-volatile uint8_t dbg_eq = 0;
-
 volatile uint8_t dbg_char8 = 0;
 volatile uint8_t dbg_char8_mapped = 0;
 volatile uint8_t dbg_after_build = 0;
 
 
-
 //***********************************************************************************
-
 
 void DMM_HandleO2Clock(void)
 {
@@ -507,26 +398,6 @@ void DMM_HandleO2Clock(void)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-static void ProcessCapturedData(void) {
-    // Combine captured ISA and INA data if needed
-    // Example: Decode data, update display buffers, etc.
-    // This is left as a placeholder for further processing.
-}
-
-
 void MX_TIM3_Init(void) {
     TIM_ClockConfigTypeDef sClockSourceConfig = { 0 };
     TIM_MasterConfigTypeDef sMasterConfig = { 0 };
@@ -566,11 +437,9 @@ void MX_TIM3_Init(void) {
 }
 
 
-
 void TIM3_IRQHandler(void) {
     HAL_TIM_IRQHandler(&htim3);
 }
-
 
 
 void DMM_HandleSyncState(void) {
@@ -768,7 +637,6 @@ static void ExtractRegANibbles(void)
     }
 }
 
-//************************************************************************************************************************************************************
 
 // Returns 7-bit HP char code (0..127) for digit number d = 1..12
 static uint8_t HP3457_GetCharCode(uint8_t d)
@@ -814,6 +682,7 @@ static uint8_t HP3457_GetCharCode(uint8_t d)
 
     return code;
 }
+
 
 // Returns punctuation code 0..3 for digit number d = 1..12
 // 0 none, 1 '.', 2 ':', 3 ','
