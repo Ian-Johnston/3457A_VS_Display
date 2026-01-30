@@ -45,7 +45,7 @@ void DisplayMain(void)
 	);
 
 	// Always draw exactly 13 characters (pad with spaces if shorter)
-	char text1[14];               // 13 chars + terminator
+	char text1[14];   // 13 chars + terminator
 	int i = 0;
 
 	// Copy up to 13 chars from displayWithPunct
@@ -61,8 +61,25 @@ void DisplayMain(void)
 
 	text1[13] = '\0';
 
+	// Fix units: "MVAC" -> "mVAC"
+	for (i = 0; text1[i + 3] != '\0'; i++) {
+		if (text1[i] == 'M' && text1[i + 1] == 'V' && text1[i + 2] == 'A' && text1[i + 3] == 'C') {
+			text1[i] = 'm';
+			break;
+		}
+	}
+
+	// Fix units: "MVDC" -> "mVDC"
+	for (i = 0; text1[i + 3] != '\0'; i++) {
+		if (text1[i] == 'M' && text1[i + 1] == 'V' && text1[i + 2] == 'D' && text1[i + 3] == 'C') {
+			text1[i] = 'm';
+			break;
+		}
+	}
+
 	DrawText(text1);
 }
+
 
 
 void DisplayAnnunciators() {
