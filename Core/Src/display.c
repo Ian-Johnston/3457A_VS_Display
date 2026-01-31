@@ -50,7 +50,8 @@ void DisplayMain(void)
 
 	// Copy the 13 source characters (displayWithPunct is always 13 chars)
 	for (i = 0; i < 13; i++) {
-		text1[i] = displayWithPunct[i];
+		char c = displayWithPunct[i];
+		text1[i] = (c == '\0') ? ' ' : c;
 	}
 
 	// Default: add trailing space as the 14th character
