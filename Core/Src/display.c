@@ -20,15 +20,16 @@
 #define TIMER_INTERVAL_MS 35 // The interval of your timed sub in milliseconds
 
 // Display colours default
-uint32_t MainColourFore = 0xFFFF00; // Yellow
-uint32_t AnnunColourFore = 0x00FF00; // Green
+uint32_t MainColourFore = 0xFFFFFF; // White FFFFFF
+uint32_t AnnunColourFore = 0x00FF00; // Green 00FF00
+uint32_t BackgroundColour = 0x000000; // Black 000000
 
 
 //************************************************************************************************************************************************************
 
 void DisplayMain(void)
 {
-	SetTextColors(0xFFFFFF, 0x000000); // Foreground: green, Background: Black
+	SetTextColors(MainColourFore, BackgroundColour); // Foreground, Background
 	ConfigureFontAndPosition(
 		0b00,    // Internal CGROM
 		0b10,    // Font size
@@ -160,7 +161,7 @@ void DisplayAnnunciators() {
 
 	for (int i = 0; i < 12; i++) {
 		if (Annunc[12 - i] == 1) {  // Turn the annunciator ON
-			SetTextColors(AnnunColourFore, 0x000000); // Foreground: Green, Background: Black
+			SetTextColors(AnnunColourFore, BackgroundColour); // Foreground: Green, Background: Black
 			ConfigureFontAndPosition(
 				0b00,    // Internal CGROM
 				0b00,    // 16-dot font size

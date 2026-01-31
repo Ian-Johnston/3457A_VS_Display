@@ -135,23 +135,12 @@ int main(void) {
 	// Start TIM3 input-capture on CH4 (PB1 = TIM3_CH4)
 	HAL_TIM_IC_Start_IT(&htim3, TIM_CHANNEL_4);
 
-
 	// Pull CS high and SCLK low immediately after reset
 	HAL_GPIO_WritePin(LCD_CS_Port, LCD_CS_Pin, GPIO_PIN_SET);			// Pull CS high
 	HAL_GPIO_WritePin(LCD_SCK_Port, LCD_SCK_Pin, GPIO_PIN_RESET);		// CLK pin low
 
 	// Pull LT7680 RESET pin high immediately after reset
 	HAL_GPIO_WritePin(RESET_PORT, RESET_PIN, GPIO_PIN_SET);   // Release reset high
-
-	// Read pin B0 - Set colours for MAIN
-	if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_SET) {
-		// B0 high
-		MainColourFore = 0xFFFFFF;		// WHite
-	}
-	else {
-		// B0 low
-		MainColourFore = 0xFFFF00;		// Yellow
-	}
 
 	HardwareReset();				// Reset LT7680 - Pull LCM_RESET low for 100ms and wait
 
@@ -166,14 +155,13 @@ int main(void) {
 	HAL_Delay(10);
 
 	// Main loop timer
-	SetTimerDuration(35);			// 35 ms timed action set
+	//SetTimerDuration(35);			// 35 ms timed action set.......not used
 
 	HAL_Delay(5);
 	//SetBacklightFull();
 	ConfigurePWMAndSetBrightness(BACKLIGHTFULL);  // Configure Timer-1 and PWM-1 for backlighting. Settable 0-100%
 
 	ClearScreen();					// Again.....
-
 
 	// Right wipe to clear random pixels down the far right hand side
 	DrawLine(0, 959, 239, 959, 0x00, 0x00, 0x00);	// far right hand vertical line, black, 1 pixel line. (this line hidden!)
@@ -193,7 +181,6 @@ int main(void) {
 	//DrawLine(0, 959, 239, 959, 0xFF, 0xFF, 0x00);	// far right
 	//DrawLine(119, 0, 119, 959, 0xFF, 0xFF, 0xFF);	// centred on R6243 horizontally
 
-
 	__HAL_GPIO_EXTI_CLEAR_IT(DMM_SYNC_Pin);			// Clear any pending interrupt flag for SYNC (PB11)
 	//HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);			// Ready to accept 3457A inputs
 
@@ -204,10 +191,10 @@ int main(void) {
 	while (1) {			// While loop running continious, full speed
 
 		// TEST
-		isaState = HAL_GPIO_ReadPin(DMM_ISA_GPIO_Port, DMM_ISA_Pin);
-		inaState = HAL_GPIO_ReadPin(DMM_INA_GPIO_Port, DMM_INA_Pin);
-		volatile uint8_t debugIsaState = isaState; // Monitor these in Live Watch
-		volatile uint8_t debugInaState = inaState;
+		//isaState = HAL_GPIO_ReadPin(DMM_ISA_GPIO_Port, DMM_ISA_Pin);
+		//inaState = HAL_GPIO_ReadPin(DMM_INA_GPIO_Port, DMM_INA_Pin);
+		//volatile uint8_t debugIsaState = isaState; // Monitor these in Live Watch
+		//volatile uint8_t debugInaState = inaState;
 
 		HAL_GPIO_TogglePin(GPIOC, TEST_OUT_Pin); // Test LED toggle
 
