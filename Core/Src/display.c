@@ -44,42 +44,92 @@ void DisplayMain(void)
 		Ypos_MAIN      // Cursor Y
 	);
 
-	// Always draw exactly 13 characters (pad with spaces if shorter)
-	char text1[14];   // 13 chars + terminator
-	int i = 0;
+	// Always draw exactly 14 characters (13 source + 1 added)
+	char text1[15];   // 14 chars + terminator
+	int i;
 
-	// Copy up to 13 chars from displayWithPunct
-	while (i < 13 && displayWithPunct[i] != '\0') {
+	// Copy the 13 source characters (displayWithPunct is always 13 chars)
+	for (i = 0; i < 13; i++) {
 		text1[i] = displayWithPunct[i];
-		i++;
 	}
 
-	// Pad remainder with spaces
-	while (i < 13) {
-		text1[i++] = ' ';
-	}
+	// Default: add trailing space as the 14th character
+	text1[13] = ' ';
+	text1[14] = '\0';
 
-	text1[13] = '\0';
+	ShiftUnitsRight(text1);		// Shift last 4 chars to the right if match criteria
 
-	// Fix units: "MVAC" -> "mVAC"
-	for (i = 0; text1[i + 3] != '\0'; i++) {
-		if (text1[i] == 'M' && text1[i + 1] == 'V' && text1[i + 2] == 'A' && text1[i + 3] == 'C') {
-			text1[i] = 'm';
-			break;
-		}
-	}
+	FixUnitText(text1);			// Fix units
 
-	// Fix units: "MVDC" -> "mVDC"
-	for (i = 0; text1[i + 3] != '\0'; i++) {
-		if (text1[i] == 'M' && text1[i + 1] == 'V' && text1[i + 2] == 'D' && text1[i + 3] == 'C') {
-			text1[i] = 'm';
-			break;
-		}
-	}
+	// Test
+	//memcpy(text1, "12345678901234", 14);
+	//text1[14] = '\0';
 
 	DrawText(text1);
 }
 
+
+// Shift chars right
+void ShiftUnitsRight(char* text1)
+{
+	static const char* unit4[] = {
+		" VDC", "MVDC",
+		"KOHM", " OHM", "MOHM", "GOHM",
+		"UAAC", "UADC", " ADC", " AAC", "MVAC", " VAC", "MADC"
+	};
+
+	for (int u = 0; u < (int)(sizeof(unit4) / sizeof(unit4[0])); u++) {
+		const char* p = unit4[u];
+
+		if (text1[9] == p[0] &&
+			text1[10] == p[1] &&
+			text1[11] == p[2] &&
+			text1[12] == p[3]) {
+
+			// shift ONLY the 4-char unit suffix right by one
+			text1[13] = text1[12];
+			text1[12] = text1[11];
+			text1[11] = text1[10];
+			text1[10] = text1[9];
+			text1[9] = ' ';
+			return;
+		}
+	}
+}
+
+
+// Replace characters
+void FixUnitText(char* text1)
+{
+	static const struct {
+		const char from[5];   // 4 chars + '\0'
+		const char to[5];     // 4 chars + '\0'
+	} rules[] = {
+		{ "MVAC", "mVAC" },
+		{ "MVDC", "mVDC" },
+		{ "KOHM", "kohm" },
+		{ " OHM", " ohm" },
+		{ "MAAC", "mAAC" },
+		{ "MADC", "mADC" },
+		{ "UADC", "\xB5""ADC" }   // µADC (0xB5 in ISO-8859-1)
+	};
+
+	for (int i = 0; text1[i + 3] != '\0'; i++) {
+		for (int r = 0; r < (int)(sizeof(rules) / sizeof(rules[0])); r++) {
+			if (text1[i] == rules[r].from[0] &&
+				text1[i + 1] == rules[r].from[1] &&
+				text1[i + 2] == rules[r].from[2] &&
+				text1[i + 3] == rules[r].from[3]) {
+
+				text1[i] = rules[r].to[0];
+				text1[i + 1] = rules[r].to[1];
+				text1[i + 2] = rules[r].to[2];
+				text1[i + 3] = rules[r].to[3];
+				return; // only one unit expected
+			}
+		}
+	}
+}
 
 
 void DisplayAnnunciators() {
