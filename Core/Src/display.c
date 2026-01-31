@@ -179,7 +179,7 @@ void DisplayAnnunciators() {
 			DrawText(AnnuncNames[i]); // Print the corresponding name
 		}
 		else {  // Turn the annunciator OFF
-			SetTextColors(0x000000, 0x000000); // Foreground: Black, Background: Black
+			SetTextColors(BackgroundColour, BackgroundColour); // Foreground: Black, Background: Black
 			ConfigureFontAndPosition(
 				0b00,    // Internal CGROM
 				0b00,    // 16-dot font size
