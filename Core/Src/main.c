@@ -163,6 +163,12 @@ int main(void) {
 
 	ClearScreen();					// Again.....
 
+	DisplaySplash();
+
+	HAL_Delay(1500);
+
+	ClearScreen();					// Again.....
+
 	// Right wipe to clear random pixels down the far right hand side
 	DrawLine(0, 959, 239, 959, 0x00, 0x00, 0x00);	// far right hand vertical line, black, 1 pixel line. (this line hidden!)
 	DrawLine(0, 958, 239, 958, 0x00, 0x00, 0x00);	// (this line hidden!)
