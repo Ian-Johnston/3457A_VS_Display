@@ -108,6 +108,8 @@ void FixUnitText(char* text1)
 		const char from[5];   // 4 chars + '\0'
 		const char to[5];     // 4 chars + '\0'
 	} rules[] = {
+		{ "MSEC", "  ms" },
+		{ " SEC", "   s" },
 		{ "  HZ", "  Hz" },
 		{ " MHZ", " MHz" },
 		{ "MVAC", "mVAC" },
