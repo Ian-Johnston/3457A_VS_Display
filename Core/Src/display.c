@@ -72,13 +72,16 @@ void DisplayMain(void)
 }
 
 
-// Shift chars right
+// Shift chars right - We have more space on the TFT so can afford to do this
 void ShiftUnitsRight(char* text1)
 {
 	static const char* unit4[] = {
 		" VDC", "MVDC",
 		"KOHM", " OHM", "MOHM", "GOHM",
-		"UAAC", "UADC", " ADC", " AAC", "MVAC", " VAC", "MADC"
+		"MAAC", "UAAC", "UADC", "MADC",
+		" ADC", " AAC", "MVAC", " VAC",
+		"MSEC", " SEC",
+		"  HZ", " MHZ"
 	};
 
 	for (int u = 0; u < (int)(sizeof(unit4) / sizeof(unit4[0])); u++) {
@@ -229,8 +232,8 @@ void DisplaySplash() {
 		0b01,    // Height multiplier
 		1,       // Line spacing
 		4,       // Character spacing
-		121,     // Cursor X
-		220      // Cursor Y
+		Xpos_SPLASH,     // Cursor X
+		Ypos_SPLASH      // Cursor Y
 	);
 
 	DrawText("Protocol by xi, TFT Upgrade by Ian Johnston") & '\0';
