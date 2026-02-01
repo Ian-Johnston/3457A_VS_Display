@@ -23,7 +23,7 @@
 uint32_t MainColourFore = 0xFFFFFF;			// White FFFFFF
 uint32_t AnnunColourFore = 0x00FF00;		// Green 00FF00
 uint32_t BackgroundColour = 0x000000;		// Black 000000
-uint32_t SplashIanJColourFore = 0xFF0000;	// Red FF0000
+uint32_t SplashIanJColourFore = 0xFFFF00;	// Yellow FFFF00
 
 
 //************************************************************************************************************************************************************
@@ -230,10 +230,10 @@ void DisplaySplash() {
 		1,       // Line spacing
 		4,       // Character spacing
 		121,     // Cursor X
-		300      // Cursor Y
+		220      // Cursor Y
 	);
 
-	DrawText("TFT Upgrade by Ian Johnston") & '\0';
+	DrawText("Protocol by xi, TFT Upgrade by Ian Johnston") & '\0';
 
 	HAL_Delay(10);
 

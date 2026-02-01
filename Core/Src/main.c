@@ -165,7 +165,7 @@ int main(void) {
 
 	DisplaySplash();
 
-	HAL_Delay(1500);
+	HAL_Delay(2000);
 
 	ClearScreen();					// Again.....
 
