@@ -73,6 +73,7 @@ void DisplayMain(void)
 
 
 // Shift chars right - We have more space on the TFT so can afford to do this
+// Enter the original four chars to be shifted
 void ShiftUnitsRight(char* text1)
 {
 	static const char* unit4[] = {
@@ -81,7 +82,8 @@ void ShiftUnitsRight(char* text1)
 		"MAAC", "UAAC", "UADC", "MADC",
 		" ADC", " AAC", "MVAC", " VAC",
 		"MSEC", " SEC",
-		"  HZ", " MHZ"
+		"  HZ", " MHZ",
+		"  DB"
 	};
 
 	for (int u = 0; u < (int)(sizeof(unit4) / sizeof(unit4[0])); u++) {
@@ -115,6 +117,7 @@ void FixUnitText(char* text1)
 		{ " SEC", "   s" },
 		{ "  HZ", "  Hz" },
 		{ " MHZ", " MHz" },
+		{ "  DB", "  dB" },
 		{ "MVAC", "mVAC" },
 		{ "MVDC", "mVDC" },
 		{ "KOHM", "kohm" },
