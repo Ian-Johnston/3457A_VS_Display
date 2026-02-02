@@ -107,6 +107,7 @@ void ShiftUnitsRight(char* text1)
 
 
 // Replace characters
+// Enter the before & after of the 4 chat text to be replaced
 void FixUnitText(char* text1)
 {
 	static const struct {
