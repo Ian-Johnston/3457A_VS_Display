@@ -169,7 +169,7 @@ int main(void) {
 
 	ClearScreen();					// Again.....
 
-	// Right wipe to clear random pixels down the far right hand side
+	// Right wipe to clear random pixels down the far right hand side	- Only needed if back porch adjustments can't get rid of edge pixels
 	DrawLine(0, 959, 239, 959, 0x00, 0x00, 0x00);	// far right hand vertical line, black, 1 pixel line. (this line hidden!)
 	DrawLine(0, 958, 239, 958, 0x00, 0x00, 0x00);	// (this line hidden!)
 	DrawLine(0, 957, 239, 957, 0x00, 0x00, 0x00);
