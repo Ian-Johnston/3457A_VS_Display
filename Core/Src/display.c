@@ -39,7 +39,7 @@ void DisplayMain(void)
 		0,       // Chroma keying disabled
 		1,       // Rotate 90 degrees counterclockwise
 		0b11,    // Width multiplier
-		0b10,    // Height multiplier
+		0b11,    // Height multiplier
 		1,       // Line spacing
 		4,       // Character spacing
 		Xpos_MAIN,     // Cursor X
@@ -254,7 +254,7 @@ void DisplaySplash() {
 		0,       // Chroma keying disabled
 		1,       // Rotate 90 degrees counterclockwise
 		0b11,    // Width multiplier
-		0b10,    // Height multiplier
+		0b11,    // Height multiplier
 		1,       // Line spacing
 		4,       // Character spacing
 		Xpos_MAIN,     // Cursor X

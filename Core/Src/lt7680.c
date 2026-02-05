@@ -1184,3 +1184,34 @@ void DrawLine(uint16_t startX, uint16_t startY, uint16_t endX, uint16_t endY, ui
     //    drawlineFinished = ReadData();      // Read the draw status
     //} while (drawlineFinished & 0x80);      // Bit 7 indicates whether drawing is in progress
 }
+
+
+void TFT_WipeTest(void)
+{
+    // Forward wipe: top -> bottom
+    for (uint16_t y = 0; y < 960; y++) {
+
+        // Simple repeating colour pattern (4 bands)
+        switch ((y / 40) & 3) {
+        case 0:  DrawLine(0, y, 239, y, 0xFF, 0x00, 0x00); break; // Red
+        case 1:  DrawLine(0, y, 239, y, 0x00, 0xFF, 0x00); break; // Green
+        case 2:  DrawLine(0, y, 239, y, 0x00, 0x00, 0xFF); break; // Blue
+        default: DrawLine(0, y, 239, y, 0xFF, 0xFF, 0xFF); break; // White
+        }
+
+        HAL_Delay(1);
+    }
+
+    // Reverse wipe: bottom -> top
+    for (int y = 959; y >= 0; y--) {
+
+        switch (((y / 40) & 3)) {
+        case 0:  DrawLine(0, (uint16_t)y, 239, (uint16_t)y, 0xFF, 0x00, 0x00); break;
+        case 1:  DrawLine(0, (uint16_t)y, 239, (uint16_t)y, 0x00, 0xFF, 0x00); break;
+        case 2:  DrawLine(0, (uint16_t)y, 239, (uint16_t)y, 0x00, 0x00, 0xFF); break;
+        default: DrawLine(0, (uint16_t)y, 239, (uint16_t)y, 0xFF, 0xFF, 0xFF); break;
+        }
+
+        HAL_Delay(1);
+    }
+}

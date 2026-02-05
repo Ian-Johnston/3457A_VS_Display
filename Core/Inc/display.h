@@ -29,7 +29,7 @@ void DisplayAnnunciatorsHalf(void);
 
 
 // Display coords
-#define Xpos_MAIN				50			// These are actually the Y position because LCD is rotated 90deg in use. Values in pixels.
+#define Xpos_MAIN				15			// These are actually the Y position because LCD is rotated 90deg in use. Values in pixels.
 #define Ypos_MAIN				0			// start at far left
 #define Xpos_ANNUNC				175
 #define Xpos_SPLASH				142

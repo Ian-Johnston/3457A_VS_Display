@@ -156,18 +156,14 @@ int main(void) {
 
 	// Main loop timer
 	//SetTimerDuration(35);			// 35 ms timed action set.......not used
-
-	HAL_Delay(5);
+	//HAL_Delay(5);
 	//SetBacklightFull();
 	ConfigurePWMAndSetBrightness(BACKLIGHTFULL);  // Configure Timer-1 and PWM-1 for backlighting. Settable 0-100%
 
 	ClearScreen();					// Again.....
 
-	DisplaySplash();
-
-	HAL_Delay(2000);
-
-	ClearScreen();					// Again.....
+	//TFT_WipeTest();
+	//ClearScreen();					// Again.....
 
 	// Right wipe to clear random pixels down the far right hand side	- Only needed if back porch adjustments can't get rid of edge pixels
 	DrawLine(0, 959, 239, 959, 0x00, 0x00, 0x00);	// far right hand vertical line, black, 1 pixel line. (this line hidden!)
@@ -178,6 +174,13 @@ int main(void) {
 	DrawLine(0, 954, 239, 954, 0x00, 0x00, 0x00);
 	DrawLine(0, 953, 239, 953, 0x00, 0x00, 0x00);
 	DrawLine(0, 952, 239, 952, 0x00, 0x00, 0x00);
+	DrawLine(0, 951, 239, 951, 0x00, 0x00, 0x00);
+
+	DisplaySplash();
+
+	HAL_Delay(2000);
+
+	ClearScreen();					// Again.....
 
 	// Test only - 400pixel based test lines for viewing the centre line and the left, middle and far right positions.
 	// The internal memory is set up as 400x960 but the leftmost 80 pixels are considered overscan and don't show up, thus 320
