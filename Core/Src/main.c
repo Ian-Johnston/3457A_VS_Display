@@ -179,15 +179,16 @@ int main(void) {
 	//ClearScreen();					// Again.....
 
 	// Right wipe to clear random pixels down the far right hand side	- Only needed if back porch adjustments can't get rid of edge pixels
-	DrawLine(0, 959, 239, 959, 0x00, 0x00, 0x00);	// far right hand vertical line, black, 1 pixel line. (this line hidden!)
-	DrawLine(0, 958, 239, 958, 0x00, 0x00, 0x00);	// (this line hidden!)
-	DrawLine(0, 957, 239, 957, 0x00, 0x00, 0x00);
-	DrawLine(0, 956, 239, 956, 0x00, 0x00, 0x00);
-	DrawLine(0, 955, 239, 955, 0x00, 0x00, 0x00);
-	DrawLine(0, 954, 239, 954, 0x00, 0x00, 0x00);
-	DrawLine(0, 953, 239, 953, 0x00, 0x00, 0x00);
-	DrawLine(0, 952, 239, 952, 0x00, 0x00, 0x00);
-	DrawLine(0, 951, 239, 951, 0x00, 0x00, 0x00);
+	// No longer needed now the Active Window is the full 240x960 (ClearScreen reaches y=959). Re-enable if edge pixels return.
+	//DrawLine(0, 959, 239, 959, 0x00, 0x00, 0x00);	// far right hand vertical line, black, 1 pixel line. (this line hidden!)
+	//DrawLine(0, 958, 239, 958, 0x00, 0x00, 0x00);	// (this line hidden!)
+	//DrawLine(0, 957, 239, 957, 0x00, 0x00, 0x00);
+	//DrawLine(0, 956, 239, 956, 0x00, 0x00, 0x00);
+	//DrawLine(0, 955, 239, 955, 0x00, 0x00, 0x00);
+	//DrawLine(0, 954, 239, 954, 0x00, 0x00, 0x00);
+	//DrawLine(0, 953, 239, 953, 0x00, 0x00, 0x00);
+	//DrawLine(0, 952, 239, 952, 0x00, 0x00, 0x00);
+	//DrawLine(0, 951, 239, 951, 0x00, 0x00, 0x00);
 
 	//DisplaySplash();
 
@@ -212,6 +213,13 @@ int main(void) {
 
 	RunBluePillSpeedTestOffline();	// BluePill speed test = 1634249 approx is good
 	ClearScreen();					// Again.....
+
+	// TEMP TEST - 1 pixel white box around the full 240x960 canvas to check visible-area alignment. Remove when done.
+	//DrawLine(0, 0, LCD_XSIZE_TFT - 1, 0, 0xFF, 0xFF, 0xFF);                                         // y = 0 edge
+	//DrawLine(0, LCD_YSIZE_TFT - 1, LCD_XSIZE_TFT - 1, LCD_YSIZE_TFT - 1, 0xFF, 0xFF, 0xFF);         // y = 959 edge
+	//DrawLine(0, 0, 0, LCD_YSIZE_TFT - 1, 0xFF, 0xFF, 0xFF);                                         // x = 0 edge
+	//DrawLine(LCD_XSIZE_TFT - 1, 0, LCD_XSIZE_TFT - 1, LCD_YSIZE_TFT - 1, 0xFF, 0xFF, 0xFF);         // x = 239 edge
+	// END TEMP TEST
 
 	while (1) {			// While loop running continious, full speed
 
