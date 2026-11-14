@@ -1,5 +1,7 @@
 # HP 3457A TFT Display Upgrade (Visual Studio 2022)
 
+![3457A TFT display upgrade](Photos/3457A.jpg)
+
 HP 3457A DMM LCD reverse engineered and now with ability to drive a 240x960 TFT LCD.
 
 Visual Studio 2022 / VisualGDB and then convert to 240x960 TFT LCD.
